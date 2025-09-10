@@ -47,12 +47,6 @@ Install-Package NexGen.MediatR.Extensions.Caching
 dotnet add package NexGen.MediatR.Extensions.Caching
 ```
 
-Dependencies:
-
-- `MediatR` (compatible version with your project)
-- `Microsoft.Extensions.Caching.Abstractions`
-- `Microsoft.Extensions.DependencyInjection`
-
 ## ⚙️ Configuration
 
 ### Step 1: Configure MediatR and Caching Services
