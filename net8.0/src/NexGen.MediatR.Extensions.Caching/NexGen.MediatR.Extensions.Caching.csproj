@@ -42,9 +42,9 @@
   <ItemGroup>
 	<PackageReference Include="MediatR" Version="13.0.0" />
 	<PackageReference Include="FluentResults" Version="4.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
-	<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
-	<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
+	<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
 </Project>
