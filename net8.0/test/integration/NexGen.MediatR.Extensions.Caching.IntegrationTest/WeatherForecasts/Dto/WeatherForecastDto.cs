@@ -1,4 +1,4 @@
-namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
+namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.Dto;
 
 public class WeatherForecastDto
 {

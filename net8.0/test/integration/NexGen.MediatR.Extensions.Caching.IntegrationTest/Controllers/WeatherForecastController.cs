@@ -1,6 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.Dto;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.EvictWeatherForecasts;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.GetWeatherForecasts;
 
 namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Controllers;
 
