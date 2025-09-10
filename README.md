@@ -1,6 +1,12 @@
+<div align="center">
+  <img src="assets/images/logo.png">
+</div>
+
 # NexGen.MediatR.Extensions.Caching
 
+<div align="center">
 [![Build And Test](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/build.yml/badge.svg)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/build.yml)
+</div>
 
 A lightweight and flexible library that extends [MediatR](https://github.com/jbogard/MediatR) to provide seamless caching and cache invalidation for requests using pipeline behaviors in .NET applications. This library integrates caching as a cross-cutting concern, enabling developers to cache query results and invalidate caches efficiently within the MediatR pipeline, improving application performance and scalability.
 
