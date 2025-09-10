@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>42f91cdb-1b1c-4899-bb4d-d445b59f93d4</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="WeatherForecasts\NewFolder\**" />
+    <Content Remove="WeatherForecasts\NewFolder\**" />
+    <EmbeddedResource Remove="WeatherForecasts\NewFolder\**" />
+    <None Remove="WeatherForecasts\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
+    <PackageReference Include="MediatR" Version="13.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj" />
+    <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
+  </ItemGroup>
+
+</Project>
