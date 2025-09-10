@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit", "unit", "{B194F339-3081-4C47-BBD6-A22A81BCE3C8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NexGen.MediatR.Extensions.Caching.IntegrationTest", "NexGen.MediatR.Extensions.Caching.IntegrationTest", "{4FBE1707-ABF8-4F5E-94E6-21D859BFBB07}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{4FBE1707-ABF8-4F5E-94E6-21D859BFBB07}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.IntegrationTest", "net8.0\test\integration\NexGen.MediatR.Extensions.Caching.IntegrationTest\NexGen.MediatR.Extensions.Caching.IntegrationTest.csproj", "{2EE00D7E-422E-41D9-A7BC-E86985A97BDB}"
 EndProject
