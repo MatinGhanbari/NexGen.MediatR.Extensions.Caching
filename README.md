@@ -1,15 +1,16 @@
-<div align="center">
-  <h1>NexGen.MediatR.Extensions.Caching</h1>
+﻿<div align="center">
+  <h1>⚡ NexGen.MediatR.Extensions.Caching ⚡</h1>
   <img src="assets/images/logo.png" height="200">
 </div>
 
-A lightweight and flexible library that extends [MediatR](https://github.com/jbogard/MediatR) to provide seamless caching and cache invalidation for requests using pipeline behaviors in .NET applications. This library integrates caching as a cross-cutting concern, enabling developers to cache query results and invalidate caches efficiently within the MediatR pipeline, improving application performance and scalability.
+A lightweight and flexible library that extends [MediatR](https://github.com/jbogard/MediatR) to provide seamless caching and cache invalidation for requests using pipeline behaviors in .NET applications.  
+This library integrates caching as a cross-cutting concern, enabling developers to cache query results 🚀 and invalidate caches efficiently within the MediatR pipeline, improving application performance and scalability.
 
 <a href="https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/build.yml">
   <img src="https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/build.yml/badge.svg">
 </a>
 
-## Table of Contents
+## 📑 Table of Contents
 
 - [Features](#features)
 - [Installation](#installation)
@@ -21,16 +22,16 @@ A lightweight and flexible library that extends [MediatR](https://github.com/jbo
 - [Contributing](#contributing)
 - [License](#license)
 
-## Features
+## ✨ Features
 
-- **Seamless Integration**: Adds caching to MediatR requests using pipeline behaviors, keeping your codebase clean and maintainable.
-- **Flexible Cache Storage**: Supports both in-memory (`IMemoryCache`) and distributed caching (`IDistributedCache`) out of the box.
-- **Automatic Cache Invalidation**: Provides pipeline behaviors to invalidate cached requests based on other requests or notifications.
-- **Customizable Cache Options**: Configure cache expiration, sliding expiration, and cache keys per request.
-- **ASP.NET Core Compatibility**: Works effortlessly with ASP.NET Core's dependency injection and caching infrastructure.
-- **Extensible Design**: Easily extend or customize caching behavior to suit your application's needs.
+- **Seamless Integration**: Adds caching to MediatR requests using pipeline behaviors.
+- **Flexible Cache Storage**: Supports both in-memory (`IMemoryCache`) 💾 and distributed caching (`IDistributedCache`) 🌐.
+- **Automatic Cache Invalidation**: Invalidate cached requests based on other requests or notifications.
+- **Customizable Cache Options**: Configure expiration ⏳, sliding expiration, and cache keys per request.
+- **ASP.NET Core Compatibility**: Works with ASP.NET Core’s DI and caching infrastructure.
+- **Extensible Design**: Easily extend or customize caching behavior to suit your needs.
 
-## Installation
+## 📦 Installation
 
 You can install `NexGen.MediatR.Extensions.Caching` via NuGet Package Manager or the .NET CLI.
 
@@ -46,21 +47,19 @@ Install-Package NexGen.MediatR.Extensions.Caching
 dotnet add package NexGen.MediatR.Extensions.Caching
 ```
 
-Ensure you have the following dependencies installed:
+Dependencies:
 
-- `MediatR` (version compatible with your project)
-- `Microsoft.Extensions.Caching.Abstractions` (for in-memory or distributed caching)
-- `Microsoft.Extensions.DependencyInjection` (for ASP.NET Core DI)
+- `MediatR` (compatible version with your project)
+- `Microsoft.Extensions.Caching.Abstractions`
+- `Microsoft.Extensions.DependencyInjection`
 
-## Configuration
-
-To use `NexGen.MediatR.Extensions.Caching`, you need to configure MediatR and the caching services in your application's dependency injection container.
+## ⚙️ Configuration
 
 ### Step 1: Configure MediatR and Caching Services
 
-In your `Startup.cs` or `Program.cs` (for ASP.NET Core), register MediatR and the caching services:
+In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 
-- Setup using `MemoryCache`
+- Using `MemoryCache`
 
   ```csharp
   builder.Services.AddMediatROutputCache(opt =>
@@ -69,20 +68,19 @@ In your `Startup.cs` or `Program.cs` (for ASP.NET Core), register MediatR and th
   });
   ```
 
-- Setup using `Redis` (`NexGen.MediatR.Extensions.Caching.Redis`)
+- Using `Redis` (`NexGen.MediatR.Extensions.Caching.Redis`)
+
   ```csharp
   builder.Services.AddMediatROutputCache(opt =>
   {
-      var redisConnectionString = "localhsot:6379,password=YourPassword";
+      var redisConnectionString = "localhost:6379,password=YourPassword";
       opt.UseRedisCache(redisConnectionString);
   });
   ```
 
-If you're using a different DI container (e.g., Autofac), refer to the container's documentation for registering MediatR and caching services.
-
 ### Step 2: Using Caching Services
 
-Add `RequestOutputCache` attribute your Request class that implements `IRequest` interface. Example:
+Add `RequestOutputCache` attribute to your `IRequest` class:
 
 ```csharp
 [RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
@@ -95,7 +93,7 @@ public class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
 
 ### Step 3: Invalidate Cached Responses
 
-To **Invalidate** the cached responses you should evict them by their tags. Example:
+Invalidate cached responses by tags:
 
 ```csharp
 public class TestClass
@@ -115,7 +113,7 @@ public class TestClass
 }
 ```
 
-## Examples
+## 💡 Examples
 
 ### Example 1: Caching a List of Items
 
@@ -181,7 +179,7 @@ public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForeca
 
 > NOTE: See Integration Test in test folder to see for example.
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! To contribute to `NexGen.MediatR.Extensions.Caching`:
 
@@ -193,6 +191,6 @@ Contributions are welcome! To contribute to `NexGen.MediatR.Extensions.Caching`:
 
 Please ensure your code follows the project's coding standards and includes unit tests where applicable.
 
-## License
+## 📃 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
