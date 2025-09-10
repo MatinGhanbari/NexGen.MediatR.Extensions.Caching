@@ -1,11 +1,11 @@
 using IntegrationTest.WeatherForecasts;
 using NexGen.MediatR.Extensions.Caching.Configurations;
-using NexGen.MediatR.Extensions.Caching.Redis.Extensions;
+using Scalar.AspNetCore;
+using Microsoft.AspNetCore.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,7 +24,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapScalarApiReference(opt => opt.WithTheme(ScalarTheme.BluePlanet));
 }
 
 app.UseHttpsRedirection();
