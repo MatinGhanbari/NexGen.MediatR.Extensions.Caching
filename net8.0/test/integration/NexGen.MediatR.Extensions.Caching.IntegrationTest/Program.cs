@@ -1,7 +1,8 @@
-using IntegrationTest.WeatherForecasts;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using NexGen.MediatR.Extensions.Caching.Configurations;
-using Scalar.AspNetCore;
-using Microsoft.AspNetCore.OpenApi;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,7 @@ builder.Services.AddMediatR(opt => opt.RegisterServicesFromAssembly(typeof(Weath
 builder.Services.AddMediatROutputCache(opt =>
 {
     opt.UseMemoryCache();
-    //opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis"));
+    // opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis"));
 });
 
 var app = builder.Build();
@@ -24,13 +25,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.MapScalarApiReference(opt => opt.WithTheme(ScalarTheme.BluePlanet));
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

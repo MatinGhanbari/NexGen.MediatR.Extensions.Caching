@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 
-namespace IntegrationTest.WeatherForecasts;
+namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
 
 public class WeatherForecastEvictRequestHandler : IRequestHandler<WeatherForecastEvictRequest, string>
 {

@@ -16,9 +16,10 @@
 
   <ItemGroup>
 	<PackageReference Include="MediatR" Version="13.0.0" />
-	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />
+	<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.7.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
