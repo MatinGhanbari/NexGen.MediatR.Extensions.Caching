@@ -12,16 +12,23 @@
 	<AssemblyName>NexGen.MediatR.Extensions.Caching.Redis</AssemblyName>
 	<Copyright>© 2025 MatinGhanbari</Copyright>
 
-	<Version>1.0.1</Version>
-	<PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+	<Version>1.0.2</Version>
+	<PackageReleaseNotes>Release v1.0.2</PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<RepositoryType>git</RepositoryType>
 	<RepositoryUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</PackageProjectUrl>
+	<PackageIcon>logo-min.png</PackageIcon>
+	<PackageTags>Mediator;MediatR;Caching;Redis;MemoryCache</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\..\assets\images\logo-min.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
