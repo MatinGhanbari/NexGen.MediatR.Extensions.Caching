@@ -6,15 +6,15 @@ namespace NexGen.MediatR.Extensions.Caching.Configurations;
 
 public static class RequestOutputCacheConfiguration
 {
-    public static IServiceCollection AddMediatorOutputCache(this IServiceCollection services, Action<RequestOutputCacheConfigurationOption> action)
+    public static IServiceCollection AddMediatROutputCache(this IServiceCollection services, Action<RequestOutputCacheConfigurationOption> action)
     {
         var options = new RequestOutputCacheConfigurationOption(services);
         action.Invoke(options);
 
-        return services.AddMediatorOutputCache();
+        return services.AddMediatROutputCache();
     }
 
-    private static IServiceCollection AddMediatorOutputCache(this IServiceCollection services)
+    private static IServiceCollection AddMediatROutputCache(this IServiceCollection services)
     {
         return services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestOutputCacheBehavior<,>));
     }

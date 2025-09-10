@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 
 // MediatR Services
 builder.Services.AddMediatR(opt => opt.RegisterServicesFromAssembly(typeof(WeatherForecastRequest).Assembly));
-builder.Services.AddMediatorOutputCache(opt =>
+builder.Services.AddMediatROutputCache(opt =>
 {
     //opt.UseMemoryCache();
     opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis"));
