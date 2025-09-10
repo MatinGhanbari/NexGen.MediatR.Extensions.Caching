@@ -6,11 +6,6 @@ namespace NexGen.MediatR.Extensions.Caching.Helpers;
 
 public static class RequestOutputCacheHelper
 {
-    public static string GetCacheKey<TRequest>(string id)
-    {
-        return $"{typeof(TRequest).FullName}:{id}";
-    }
-
     public static string GetCacheKey<TRequest>(TRequest request)
     {
         if (request == null)

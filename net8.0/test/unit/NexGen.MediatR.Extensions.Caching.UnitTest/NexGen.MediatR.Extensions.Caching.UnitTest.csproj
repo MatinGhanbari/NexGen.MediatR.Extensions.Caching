@@ -23,4 +23,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
+  </ItemGroup>
+
 </Project>
