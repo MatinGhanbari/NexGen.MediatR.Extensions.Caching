@@ -9,9 +9,9 @@ A lightweight and flexible library that extends [MediatR](https://github.com/jbo
 - [Features](#features)
 - [Installation](#installation)
 - [Configuration](#configuration)
-- [Usage](#usage)
-  - [Caching a Request](#caching-a-request)
-  - [Cache Invalidation](#cache-invalidation)
+  - [Configure MediatR and Caching Services](#step-1-configure-mediatr-and-caching-services)
+  - [Using Caching Services](#step-2-using-caching-services)
+  - [Invalidate Cached Responses](#step-3-invalidate-cached-responses)
 - [Examples](#examples)
 - [Contributing](#contributing)
 - [License](#license)
@@ -88,9 +88,9 @@ public class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
 }
 ```
 
-### Step 2: Evict Cached Responses
+### Step 3: Invalidate Cached Responses
 
-To evict the cached responses you should evict them by their tags. Example:
+To **Invalidate** the cached responses you should evict them by their tags. Example:
 
 ```csharp
 public class TestClass
