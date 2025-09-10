@@ -8,8 +8,7 @@ using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.GetWeat
 namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Controllers;
 
 [ApiController]
-[ApiVersion("1.0")]
-[Route("/api/v1/[controller]")]
+[Route("/api")]
 public class WeatherForecastController : ControllerBase
 {
     private readonly ILogger<WeatherForecastController> _logger;
@@ -27,7 +26,7 @@ public class WeatherForecastController : ControllerBase
         return await _mediator.Send(new WeatherForecastRequest { Limit = limit, Offset = offset });
     }
 
-    [HttpGet("WeatherForecasts/Evict")]
+    [HttpPost("WeatherForecasts/Evict")]
     public async Task<string> EvictWeatherForecastsAsync()
     {
         return await _mediator.Send(new WeatherForecastEvictRequest());
