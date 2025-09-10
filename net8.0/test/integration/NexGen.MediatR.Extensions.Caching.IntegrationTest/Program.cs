@@ -14,8 +14,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMediatR(opt => opt.RegisterServicesFromAssembly(typeof(WeatherForecastRequest).Assembly));
 builder.Services.AddMediatROutputCache(opt =>
 {
-    //opt.UseMemoryCache();
-    opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis"));
+    opt.UseMemoryCache();
+    //opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis"));
 });
 
 var app = builder.Build();
