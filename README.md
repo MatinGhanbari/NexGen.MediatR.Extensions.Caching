@@ -14,7 +14,7 @@ This library integrates caching as a cross-cutting concern, enabling developers 
 
 - [Features](#-features)
 - [Installation](#-installation)
-- [Configuration](#-configuration)
+- [Configuration](#%EF%B8%8F-configuration)
   - [Configure MediatR and Caching Services](#step-1-configure-mediatr-and-caching-services)
   - [Using Caching Services](#step-2-using-caching-services)
   - [Invalidate Cached Responses](#step-3-invalidate-cached-responses)
