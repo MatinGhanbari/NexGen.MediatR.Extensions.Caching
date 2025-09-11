@@ -153,7 +153,7 @@ public class WeatherForecastUpdateRequest : IRequest<string>
 
 public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForecastUpdateRequest, string>
 {
-    private readonly IRequestOutputCache<WeatherForecastUpdateRequest, string> _cache;
+    private readonly IRequestOutputCache<WeatherForecastUpdateRequest, string>  _cache;
 
     public WeatherForecastUpdateRequestHandler(IRequestOutputCache<WeatherForecastUpdateRequest, string> cache)
     {
