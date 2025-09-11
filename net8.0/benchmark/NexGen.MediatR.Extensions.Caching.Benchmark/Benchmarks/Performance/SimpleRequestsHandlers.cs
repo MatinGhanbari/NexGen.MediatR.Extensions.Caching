@@ -3,23 +3,26 @@
 namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance
 {
     internal class SimpleRequestsHandlers :
-        IRequestHandler<SimpleNotCachedRequest, Task>,
-        IRequestHandler<SimpleCachedRequest, Task>
+        IRequestHandler<SimpleNotCachedRequest, string>,
+        IRequestHandler<SimpleCachedRequest, string>
     {
-        public async Task<Task> Handle(SimpleNotCachedRequest request, CancellationToken cancellationToken)
+        private readonly string _result = "JOB RESULT";
+
+        public async Task<string> Handle(SimpleNotCachedRequest request, CancellationToken cancellationToken)
         {
-            return DoTheJob();
+            return await DoTheJob(cancellationToken);
         }
 
-        public async Task<Task> Handle(SimpleCachedRequest request, CancellationToken cancellationToken)
+        public async Task<string> Handle(SimpleCachedRequest request, CancellationToken cancellationToken)
         {
-            return DoTheJob();
+            return await DoTheJob(cancellationToken);
         }
 
-        private async Task DoTheJob()
+        private async Task<string> DoTheJob(CancellationToken cancellationToken = default)
         {
             // Simulate the job
-            Thread.Sleep(new Random().Next(500, 1500));
+            await Task.Delay(new Random().Next(200, 600), cancellationToken);
+            return _result;
         }
     }
 }

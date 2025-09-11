@@ -1,4 +1,4 @@
 ﻿using BenchmarkDotNet.Running;
-using NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance;
+using NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks;
 
-BenchmarkRunner.Run<PerformanceBenchmarkHandler>();
+BenchmarkRunner.Run<PerformanceBenchmark>();

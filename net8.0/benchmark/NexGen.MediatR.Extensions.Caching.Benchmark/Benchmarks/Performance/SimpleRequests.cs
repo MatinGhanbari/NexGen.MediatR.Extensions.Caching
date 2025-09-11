@@ -4,14 +4,28 @@ using NexGen.MediatR.Extensions.Caching.Attributes;
 namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance;
 
 
-public record SimpleNotCachedRequest : IRequest<bool>, IRequest<Task>
+[RequestOutputCache(tags: [nameof(SimpleCachedRequest)], expirationInSeconds: int.MaxValue)]
+public record SimpleCachedRequest : IRequest<string>
 {
     public string Title { get; set; }
+    public int Code { get; set; }
+
+    public SimpleCachedRequest(string title)
+    {
+        Title = title;
+        Code = new Random().Next(0, 10);
+    }
 }
 
 
-[RequestOutputCache(tags: [nameof(SimpleCachedRequest)], expirationInSeconds: int.MaxValue)]
-public record SimpleCachedRequest : IRequest<bool>, IRequest<string>, IRequest<Task>
+public record SimpleNotCachedRequest : IRequest<string>
 {
     public string Title { get; set; }
+    public int Code { get; set; }
+
+    public SimpleNotCachedRequest(string title)
+    {
+        Title = title;
+        Code = new Random().Next(0, 10);
+    }
 }

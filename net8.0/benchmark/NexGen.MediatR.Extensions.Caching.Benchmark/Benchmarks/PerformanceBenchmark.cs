@@ -1,19 +1,21 @@
 ﻿using BenchmarkDotNet.Attributes;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 
-namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance;
+namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks;
 
 [MemoryDiagnoser]
-public class PerformanceBenchmarkHandler
+public class PerformanceBenchmark
 {
     private readonly IMediator _mediator;
     private readonly string _requestTitle = "PerformanceBench";
 
-    public PerformanceBenchmarkHandler()
+    public PerformanceBenchmark()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssemblyContaining<SimpleRequestsHandlers>();
@@ -29,14 +31,14 @@ public class PerformanceBenchmarkHandler
     }
 
     [Benchmark]
-    public async Task<object?> BenchmarkGetUserProfile()
+    public async Task<object?> CachedRequest()
     {
-        return await _mediator.Send(new SimpleCachedRequest() { Title = _requestTitle });
+        return await _mediator.Send(new SimpleCachedRequest(_requestTitle));
     }
 
     [Benchmark]
-    public async Task<object?> BenchmarkGetOrderSummary()
+    public async Task<object?> NotCachedRequest()
     {
-        return await _mediator.Send(new SimpleNotCachedRequest() { Title = _requestTitle });
+        return await _mediator.Send(new SimpleNotCachedRequest(_requestTitle));
     }
 }

@@ -1,11 +1,12 @@
-# ⚡ NexGen.MediatR.Extensions.Caching ⚡
+﻿# ⚡ NexGen.MediatR.Extensions.Caching ⚡
+
 ![CI](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png)
 
 A lightweight and flexible library that extends [MediatR](https://github.com/jbogard/MediatR) to provide seamless caching and cache invalidation for requests using pipeline behaviors in .NET applications.  
 This library integrates caching as a cross-cutting concern, enabling developers to cache query results 🚀 and invalidate caches efficiently within the MediatR pipeline, improving application performance and scalability.
 
 [![CI](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml/badge.svg)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml)
-[![NuGet](https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching.svg)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching) 
+[![NuGet](https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching.svg)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
 [![NuGet](https://img.shields.io/nuget/vpre/NexGen.MediatR.Extensions.Caching.svg)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
 
 ## 📑 Table of Contents
@@ -170,6 +171,10 @@ public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForeca
 ```
 
 > NOTE: See Integration Test in test folder to see for example.
+
+## 📈 Benchmarks
+
+![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
 
 ## 🤝 Contributing
 
