@@ -176,6 +176,10 @@ public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForeca
 
 ![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
 
+> Note: This is benchmark results of testing same simple request with and without caching using `NexGen.MediatR.Extensions.Caching` package.
+> The bigger and complicated events may use more allocated memory in memory cache solution.
+> Better to use Distributed cache services like `Redis` in complicated and bigger responses.
+
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute to `NexGen.MediatR.Extensions.Caching`:
