@@ -3,5 +3,6 @@
 public enum CacheType
 {
     MemoryCache = 1,
-    RedisCache
+    RedisCache = 2,
+    GarnetCache = 3,
 }

@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.UnitTest", "net8.0\test\unit\NexGen.MediatR.Extensions.Caching.UnitTest\NexGen.MediatR.Extensions.Caching.UnitTest.csproj", "{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Garnet", "net8.0\src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj", "{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 		{2EE00D7E-422E-41D9-A7BC-E86985A97BDB} = {4FBE1707-ABF8-4F5E-94E6-21D859BFBB07}
 		{0AF5FDE9-A8DF-4D1B-BF9D-DBDD148A380B} = {0F5F74DA-75ED-424D-8849-08C1565AF0BC}
 		{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8} = {B194F339-3081-4C47-BBD6-A22A81BCE3C8}
+		{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93} = {396DFD78-E35D-453B-AFB5-F84EAA1E1A7B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F073212E-6245-47F1-8755-4D8500805236}
