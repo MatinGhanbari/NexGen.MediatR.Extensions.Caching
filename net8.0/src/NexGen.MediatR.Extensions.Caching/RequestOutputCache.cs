@@ -32,10 +32,11 @@ public sealed class RequestOutputCache<TRequest, TResponse>
         {
             var cacheKey = RequestOutputCacheHelper.GetCacheKey(request);
 
-            if (_memoryCache.TryGetValue(cacheKey, out var response) && response != null)
-                return Result.Ok((TResponse)response);
+            if (!_memoryCache.TryGetValue(cacheKey, out var response) || response == null)
+                return Result.Fail(ErrorMessages.ResponseNotFound);
 
-            return Result.Fail(ErrorMessages.ResponseNotFound);
+            _logger.LogInformation(string.Format(ErrorMessages.CacheHit, typeof(TRequest).Name));
+            return Result.Ok((TResponse)response);
         }
         catch (Exception exception)
         {

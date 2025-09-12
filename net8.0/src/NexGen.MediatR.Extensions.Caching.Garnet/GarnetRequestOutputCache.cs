@@ -20,7 +20,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
     public GarnetRequestOutputCache(
         ILogger<GarnetRequestOutputCache<TRequest, TResponse>> logger,
         IDistributedCache cache,
-        TimeSpan? expirationRelativeToNow = null) 
+        TimeSpan? expirationRelativeToNow = null)
     {
         _logger = logger;
         _cache = cache;
@@ -34,10 +34,11 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
             var cacheKey = RequestOutputCacheHelper.GetCacheKey(request);
 
             var response = await _cache.GetStringAsync(cacheKey, cancellationToken);
-            if (response != null)
-                return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
+            if (response == null)
+                return Result.Fail(ErrorMessages.ResponseNotFound);
 
-            return Result.Fail(ErrorMessages.ResponseNotFound);
+            _logger.LogInformation(string.Format(ErrorMessages.CacheHit, typeof(TRequest).Name));
+            return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
         }
         catch (Exception exception)
         {
