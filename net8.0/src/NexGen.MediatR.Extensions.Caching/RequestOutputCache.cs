@@ -134,7 +134,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
     /// <returns>A successful <see cref="Result"/> when eviction completes.</returns>
     private async Task<Result> EvictTypesAsync(HashSet<Type> tagTypes, CancellationToken cancellationToken = default)
     {
-        foreach (var tagType in tagTypes)
+        foreach (var tagType in tagTypes.TakeWhile(_ => !cancellationToken.IsCancellationRequested))
         {
             if (!RequestOutputCacheContainer.CacheTypes.TryGetValue(tagType, out HashSet<string>? cacheTypes))
                 continue;
