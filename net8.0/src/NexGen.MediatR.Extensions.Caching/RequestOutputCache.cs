@@ -1,6 +1,7 @@
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
@@ -11,11 +12,16 @@ namespace NexGen.MediatR.Extensions.Caching;
 public sealed class RequestOutputCache<TRequest, TResponse>
     : IRequestOutputCache<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
+    private readonly ILogger<RequestOutputCache<TRequest, TResponse>> _logger;
     private readonly IMemoryCache _memoryCache;
     private readonly TimeSpan? _expirationRelativeToNow;
 
-    public RequestOutputCache(IMemoryCache memoryCache, TimeSpan? expirationRelativeToNow = null)
+    public RequestOutputCache(
+        ILogger<RequestOutputCache<TRequest, TResponse>> logger,
+        IMemoryCache memoryCache,
+        TimeSpan? expirationRelativeToNow = null)
     {
+        _logger = logger;
         _memoryCache = memoryCache;
         _expirationRelativeToNow = expirationRelativeToNow ?? TimeSpan.FromSeconds(RequestCacheConstants.ExpirationInSeconds);
     }
@@ -33,6 +39,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -80,6 +87,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -101,6 +109,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }

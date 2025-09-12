@@ -1,22 +1,29 @@
 ﻿using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Helpers;
+using System;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis;
 
 public sealed class RedisRequestOutputCache<TRequest, TResponse>
     : IRequestOutputCache<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
+    private readonly ILogger<RedisRequestOutputCache<TRequest, TResponse>> _logger;
     private readonly IDistributedCache _cache;
     private readonly TimeSpan? _expirationRelativeToNow;
 
-    public RedisRequestOutputCache(IDistributedCache cache, TimeSpan? expirationRelativeToNow = null)
+    public RedisRequestOutputCache(
+        ILogger<RedisRequestOutputCache<TRequest, TResponse>> logger,
+        IDistributedCache cache,
+        TimeSpan? expirationRelativeToNow = null)
     {
+        _logger = logger;
         _cache = cache;
         _expirationRelativeToNow = expirationRelativeToNow ?? TimeSpan.FromSeconds(RequestCacheConstants.ExpirationInSeconds);
     }
@@ -35,6 +42,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -83,6 +91,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -104,6 +113,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
