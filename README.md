@@ -74,6 +74,8 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 ### Step 2: Using Caching Services
 
 Add `RequestOutputCache` attribute to your `IRequest` class:
+> [!WARNING]
+> The request class must implement `IRequest<Response>` where `Response` is a **class** (**not an interface**)!
 
 ```csharp
 [RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
@@ -170,15 +172,18 @@ public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForeca
 }
 ```
 
-> NOTE: See Integration Test in test folder to see for example.
+> [!NOTE]
+> See Integration Test in test folder to see for example.
 
 ## 📈 Benchmarks
 
 ![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
 
-> Note: This benchmark is available in benchmark directory (`NexGen.MediatR.Extensions.Caching.Benchmark`).
+> [!NOTE]
+> This benchmark is available in benchmark directory (`NexGen.MediatR.Extensions.Caching.Benchmark`).
 
-> Note: This is benchmark results of testing same simple request with and without caching using `NexGen.MediatR.Extensions.Caching` package.
+> [!TIP]
+> This is benchmark results of testing same simple request with and without caching using `NexGen.MediatR.Extensions.Caching` package.
 > The bigger and complicated responses may use more allocated memory in memory cache solution.
 > Better to use distributed cache services like `Redis` in enterprise projects.
 
