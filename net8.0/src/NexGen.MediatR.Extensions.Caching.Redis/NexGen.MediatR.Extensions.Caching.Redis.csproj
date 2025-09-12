@@ -12,8 +12,8 @@
 	<AssemblyName>NexGen.MediatR.Extensions.Caching.Redis</AssemblyName>
 	<Copyright>© 2025 MatinGhanbari</Copyright>
 
-	<Version>1.0.4</Version>
-	<PackageReleaseNotes>Release v1.0.4</PackageReleaseNotes>
+	<Version>1.0.5</Version>
+	<PackageReleaseNotes>Release v1.0.5</PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
