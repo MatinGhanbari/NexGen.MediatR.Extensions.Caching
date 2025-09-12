@@ -7,7 +7,6 @@ using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Helpers;
-using System;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis;
 
@@ -35,10 +34,11 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
             var cacheKey = RequestOutputCacheHelper.GetCacheKey(request);
 
             var response = await _cache.GetStringAsync(cacheKey, cancellationToken);
-            if (response != null)
-                return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
+            if (response == null)
+                return Result.Fail(ErrorMessages.ResponseNotFound);
 
-            return Result.Fail(ErrorMessages.ResponseNotFound);
+            _logger.LogInformation(string.Format(ErrorMessages.CacheHit, typeof(TRequest).Name));
+            return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
         }
         catch (Exception exception)
         {
