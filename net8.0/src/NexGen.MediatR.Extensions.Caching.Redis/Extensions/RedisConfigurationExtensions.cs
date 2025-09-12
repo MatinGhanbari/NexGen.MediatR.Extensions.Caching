@@ -1,28 +1,44 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Configurations;
+using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis.Extensions;
 
+/// <summary>
+/// Provides extension methods to configure Redis caching for MediatR requests.
+/// </summary>
 public static class RedisConfigurationExtensions
 {
+    /// <summary>
+    /// Configures the library to use Redis cache for MediatR request responses.
+    /// </summary>
+    /// <param name="options">The output cache configuration options.</param>
+    /// <param name="connectionString">The connection string for the Redis server.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="connectionString"/> is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if a cache type has already been configured.</exception>
     public static void UseRedisCache(this RequestOutputCacheConfigurationOption options, string connectionString)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
 
-        if (options._cacheType != default)
-            throw new Exception("MediatR Response Cache already added.");
+        if (options.RequestOutputCacheType != default)
+            throw new InvalidOperationException(ErrorMessages.AlreadyConfigured);
 
-        if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentException("Connection string cannot be empty.", nameof(connectionString));
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new ArgumentException(ErrorMessages.EmptyConnectionString, nameof(connectionString));
 
-        options._cacheType = CacheType.RedisCache;
+        options.RequestOutputCacheType = RequestOutputCacheType.RedisCache;
 
+        // Configure StackExchange.Redis cache
         options.Services.AddStackExchangeRedisCache(redisOptions =>
         {
             redisOptions.Configuration = connectionString;
         });
 
+        // Register the Redis request output cache implementation
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RedisRequestOutputCache<,>));
     }
 }
