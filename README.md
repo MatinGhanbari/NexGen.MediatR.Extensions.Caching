@@ -145,7 +145,7 @@ public class WeatherForecastRequestHandler : IRequestHandler<WeatherForecastRequ
 The response will be cached with the key `"weather"` for 5 minutes.
 
 > [!IMPORTANT]  
-> If `expirationInSeconds` is not provided, it uses the **default value**. To make the response never expire, set expirationInSeconds to **Zero**.
+> If `expirationInSeconds` is not provided, it uses the **default value**. To make the response never expire, set `expirationInSeconds` to **Zero**.
 
 ### Example 2: Invalidation on Update
 
