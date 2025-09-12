@@ -11,12 +11,12 @@ public static class GarnetConfigurationExtensions
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
 
-        if (options.CacheType != default)
+        if (options.RequestOutputCacheType != default)
             throw new Exception("MediatR Response Cache already added.");
 
         if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentException("Connection string cannot be empty.", nameof(connectionString));
 
-        options.CacheType = CacheType.GarnetCache;
+        options.RequestOutputCacheType = RequestOutputCacheType.GarnetCache;
 
         options.Services.AddStackExchangeRedisCache(garnetCacheOptions =>
         {

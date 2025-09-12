@@ -18,7 +18,7 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
     /// <summary>
     /// The selected cache type.
     /// </summary>
-    public CacheType CacheType;
+    public RequestOutputCacheType RequestOutputCacheType;
 
     /// <summary>
     /// Configures the library to use in-memory caching for MediatR request responses.
@@ -28,12 +28,12 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
     /// </exception>
     public void UseMemoryCache()
     {
-        if (CacheType != default)
+        if (RequestOutputCacheType != default)
             throw new Exception("MediatR Response Cache already added.");
 
         if (Services == null) throw new ArgumentNullException(nameof(Services));
 
-        CacheType = CacheType.MemoryCache;
+        RequestOutputCacheType = RequestOutputCacheType.MemoryCache;
 
         Services.AddMemoryCache();
         Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RequestOutputCache<,>));
