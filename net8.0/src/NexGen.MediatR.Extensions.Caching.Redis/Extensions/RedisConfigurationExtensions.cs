@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Configurations;
+using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
 
@@ -9,12 +10,14 @@ public static class RedisConfigurationExtensions
 {
     public static void UseRedisCache(this RequestOutputCacheConfigurationOption options, string connectionString)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (options == null) 
+            throw new ArgumentNullException(nameof(options));
 
         if (options.RequestOutputCacheType != default)
-            throw new Exception("MediatR Response Cache already added.");
+            throw new InvalidOperationException(ErrorMessages.AlreadyConfigured);
 
-        if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentException("Connection string cannot be empty.", nameof(connectionString));
+        if (string.IsNullOrWhiteSpace(connectionString)) 
+            throw new ArgumentException(ErrorMessages.EmptyConnectionString, nameof(connectionString));
 
         options.RequestOutputCacheType = RequestOutputCacheType.RedisCache;
 
