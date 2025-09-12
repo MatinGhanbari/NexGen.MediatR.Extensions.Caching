@@ -77,8 +77,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
                     }
                     else
                     {
-                        tagTypes = [];
-                        tagTypes.Add(typeof(TRequest));
+                        tagTypes = [typeof(TRequest)];
                         RequestOutputCacheContainer.CacheTags.TryAdd(tag, tagTypes);
                     }
                 }
@@ -91,8 +90,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
             }
             else
             {
-                cacheTypes = [];
-                cacheTypes.Add(cacheKey);
+                cacheTypes = [cacheKey];
                 RequestOutputCacheContainer.CacheTypes.TryAdd(typeof(TRequest), cacheTypes);
             }
 
