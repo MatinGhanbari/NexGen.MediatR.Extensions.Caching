@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj" />
+    <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj" />
     <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
   </ItemGroup>
 
