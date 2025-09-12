@@ -41,7 +41,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception.Message);
+            _logger.LogError(exception, exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -89,7 +89,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception.Message);
+            _logger.LogError(exception, exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -111,7 +111,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception.Message);
+            _logger.LogError(exception, exception.Message);
             return Result.Fail(exception.Message);
         }
     }
