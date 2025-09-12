@@ -7,6 +7,7 @@ using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Helpers;
+using ErrorMessages = NexGen.MediatR.Extensions.Caching.Garnet.Constants.ErrorMessages;
 
 namespace NexGen.MediatR.Extensions.Caching.Garnet;
 
