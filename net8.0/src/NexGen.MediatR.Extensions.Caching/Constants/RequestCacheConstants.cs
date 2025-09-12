@@ -2,5 +2,5 @@
 
 public class RequestCacheConstants
 {
-    public static readonly int ExpirationInSeconds = 300;
+    public const int ExpirationInSeconds = 300;
 }

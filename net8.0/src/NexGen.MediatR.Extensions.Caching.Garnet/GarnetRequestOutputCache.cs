@@ -15,16 +15,13 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
 {
     private readonly ILogger<GarnetRequestOutputCache<TRequest, TResponse>> _logger;
     private readonly IDistributedCache _cache;
-    private readonly TimeSpan? _expirationRelativeToNow;
 
     public GarnetRequestOutputCache(
         ILogger<GarnetRequestOutputCache<TRequest, TResponse>> logger,
-        IDistributedCache cache,
-        TimeSpan? expirationRelativeToNow = null)
+        IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
-        _expirationRelativeToNow = expirationRelativeToNow ?? TimeSpan.FromSeconds(RequestCacheConstants.ExpirationInSeconds);
     }
 
     public async Task<Result<TResponse>> GetAsync(TRequest request, CancellationToken cancellationToken = default)
@@ -37,7 +34,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
             if (response == null)
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
-            _logger.LogInformation(string.Format(ErrorMessages.CacheHit, typeof(TRequest).Name));
+            _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
             return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
         }
         catch (Exception exception)
@@ -54,8 +51,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
             var cacheKey = RequestOutputCacheHelper.GetCacheKey(request);
             var options = new DistributedCacheEntryOptions()
             {
-                AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : _expirationRelativeToNow,
-
+                AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
             foreach (var tag in tags)
