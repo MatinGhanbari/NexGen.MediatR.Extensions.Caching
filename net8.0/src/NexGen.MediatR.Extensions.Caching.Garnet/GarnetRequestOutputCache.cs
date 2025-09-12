@@ -15,7 +15,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
     private readonly IDistributedCache _cache;
     private readonly TimeSpan? _expirationRelativeToNow;
 
-    public GarnetRequestOutputCache(IDistributedCache cache, TimeSpan? expirationRelativeToNow = null)
+    public GarnetRequestOutputCache(IDistributedCache cache, TimeSpan? expirationRelativeToNow = null) 
     {
         _cache = cache;
         _expirationRelativeToNow = expirationRelativeToNow ?? TimeSpan.FromSeconds(RequestCacheConstants.ExpirationInSeconds);
