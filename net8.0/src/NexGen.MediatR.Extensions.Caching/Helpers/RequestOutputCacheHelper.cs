@@ -11,7 +11,7 @@ public static class RequestOutputCacheHelper
 {
     /// <summary>
     /// Generates a unique cache key for the specified request by serializing it
-    /// and computing a SHA-256 hash.
+    /// and computing the SHA-256 hash.
     /// </summary>
     /// <typeparam name="TRequest">The type of the request.</typeparam>
     /// <param name="request">The request object to generate a cache key for.</param>
