@@ -1,7 +1,10 @@
 ﻿namespace NexGen.MediatR.Extensions.Caching.Constants;
 
-public class ErrorMessages
+/// <summary>
+/// Contains standard error messages used across the MediatR output caching library.
+/// </summary>
+public partial class ErrorMessages
 {
     public static readonly string ResponseNotFound = "Response not found";
     public static readonly string CacheHit = "Cache hit for MediatR request {RequestName}, Returning cached response.";
-}   
+}
