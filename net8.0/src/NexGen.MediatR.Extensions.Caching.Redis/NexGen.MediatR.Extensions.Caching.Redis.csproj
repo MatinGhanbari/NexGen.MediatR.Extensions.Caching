@@ -12,8 +12,8 @@
 	<AssemblyName>NexGen.MediatR.Extensions.Caching.Redis</AssemblyName>
 	<Copyright>© 2025 MatinGhanbari</Copyright>
 
-	<Version>1.0.3</Version>
-	<PackageReleaseNotes>Release v1.0.3</PackageReleaseNotes>
+	<Version>1.0.4</Version>
+	<PackageReleaseNotes>Release v1.0.4</PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.20" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

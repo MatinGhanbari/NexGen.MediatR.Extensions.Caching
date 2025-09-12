@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 using NexGen.MediatR.Extensions.Caching.Helpers;
 
 namespace NexGen.MediatR.Extensions.Caching.UnitTest.Helpers;
@@ -29,7 +29,7 @@ public class CacheKeyGeneratorTest
     {
         // Arrange
         var request = new TestRequest { Id = id, Name = name };
-        var serialized = JsonSerializer.Serialize(request);
+        var serialized = JsonConvert.SerializeObject(request);
 
         using var sha = SHA256.Create();
         var hashBytes = sha.ComputeHash(Encoding.UTF8.GetBytes(serialized));

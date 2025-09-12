@@ -1,11 +1,11 @@
 ﻿using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Helpers;
-using System.Text.Json;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis;
 
@@ -29,7 +29,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
 
             var response = await _cache.GetStringAsync(cacheKey, cancellationToken);
             if (response != null)
-                return Result.Ok((TResponse)JsonSerializer.Deserialize<TResponse>(response));
+                return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
 
             return Result.Fail(ErrorMessages.ResponseNotFound);
         }
@@ -77,7 +77,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
                 RequestOutputCacheContainer.CacheTypes.TryAdd(typeof(TRequest), cacheTypes);
             }
 
-            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(response), options, cancellationToken);
+            await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(response), options, cancellationToken);
 
             return Result.Ok();
         }

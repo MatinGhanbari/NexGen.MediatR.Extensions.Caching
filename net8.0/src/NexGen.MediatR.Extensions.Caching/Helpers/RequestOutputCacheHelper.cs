@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace NexGen.MediatR.Extensions.Caching.Helpers;
 
@@ -11,7 +11,7 @@ public static class RequestOutputCacheHelper
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        var serialized = JsonSerializer.Serialize(request);
+        var serialized = JsonConvert.SerializeObject(request);
 
         using var sha = SHA256.Create();
         var hashBytes = sha.ComputeHash(Encoding.UTF8.GetBytes(serialized));
