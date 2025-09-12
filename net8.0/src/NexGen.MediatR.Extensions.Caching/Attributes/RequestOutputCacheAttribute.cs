@@ -6,7 +6,7 @@ namespace NexGen.MediatR.Extensions.Caching.Attributes;
 /// Specifies that the response of a MediatR request should be cached.
 /// Apply this attribute to a request handler class to enable automatic output caching.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 public class RequestOutputCacheAttribute : Attribute
 {
     /// <summary>
