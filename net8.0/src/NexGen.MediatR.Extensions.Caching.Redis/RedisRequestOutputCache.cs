@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
@@ -12,13 +13,16 @@ namespace NexGen.MediatR.Extensions.Caching.Redis;
 public sealed class RedisRequestOutputCache<TRequest, TResponse>
     : IRequestOutputCache<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
+    private readonly ILogger<RedisRequestOutputCache<TRequest, TResponse>> _logger;
     private readonly IDistributedCache _cache;
-    private readonly TimeSpan? _expirationRelativeToNow;
 
-    public RedisRequestOutputCache(IDistributedCache cache, TimeSpan? expirationRelativeToNow = null)
+    public RedisRequestOutputCache(
+        ILogger<RedisRequestOutputCache<TRequest, TResponse>> logger,
+        IDistributedCache cache,
+        TimeSpan? expirationRelativeToNow = null)
     {
+        _logger = logger;
         _cache = cache;
-        _expirationRelativeToNow = expirationRelativeToNow ?? TimeSpan.FromSeconds(RequestCacheConstants.ExpirationInSeconds);
     }
 
     public async Task<Result<TResponse>> GetAsync(TRequest request, CancellationToken cancellationToken = default)
@@ -28,13 +32,15 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
             var cacheKey = RequestOutputCacheHelper.GetCacheKey(request);
 
             var response = await _cache.GetStringAsync(cacheKey, cancellationToken);
-            if (response != null)
-                return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
+            if (response == null)
+                return Result.Fail(ErrorMessages.ResponseNotFound);
 
-            return Result.Fail(ErrorMessages.ResponseNotFound);
+            _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
+            return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -46,8 +52,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
             var cacheKey = RequestOutputCacheHelper.GetCacheKey(request);
             var options = new DistributedCacheEntryOptions()
             {
-                AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : _expirationRelativeToNow,
-
+                AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
             foreach (var tag in tags)
@@ -83,6 +88,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -104,6 +110,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
