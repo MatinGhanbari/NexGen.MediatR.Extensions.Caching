@@ -75,7 +75,7 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 
 Add `RequestOutputCache` attribute to your `IRequest` class:
 > [!WARNING]
-> The request class must implement `IRequest<Response>` where `Response` is a **class** (**not an interface**)!
+> The request class must implement `IRequest<Response>` where `Response` is **not an interface**!
 
 ```csharp
 [RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
