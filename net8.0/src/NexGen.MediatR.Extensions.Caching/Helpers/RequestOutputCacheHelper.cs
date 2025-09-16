@@ -26,8 +26,8 @@ public static class RequestOutputCacheHelper
         var serialized = JsonConvert.SerializeObject(request);
 
         // Compute SHA-256 hash of the serialized request
-        using var sha = SHA256.Create();
-        var hashBytes = sha.ComputeHash(Encoding.UTF8.GetBytes(serialized));
+        var source = Encoding.UTF8.GetBytes(serialized);
+        var hashBytes = SHA256.HashData(source);
 
         // Convert hash bytes to a lowercase hexadecimal string
         var hashString = BitConverter
