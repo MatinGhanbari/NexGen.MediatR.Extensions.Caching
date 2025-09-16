@@ -1,4 +1,6 @@
-﻿namespace NexGen.MediatR.Extensions.Caching.Constants;
+﻿using FluentResults;
+
+namespace NexGen.MediatR.Extensions.Caching.Constants;
 
 /// <summary>
 /// Contains standard error messages used across the MediatR output caching library.
@@ -10,4 +12,5 @@ public static class ErrorMessages
     public const string AlreadyConfigured = "The request output cache has already been configured.";
     public const string EmptyConnectionString = "The connection string cannot be empty.";
     public const string ContainerUpdatesFails = "Container Updates Fails.";
+    public const string FailedToUpdateContainer = "Failed to update the cache container";
 }
