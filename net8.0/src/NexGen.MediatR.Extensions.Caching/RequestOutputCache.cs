@@ -65,8 +65,10 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null
             };
 
-            RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
-
+            var containerResult = RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
+            if(containerResult.IsFailed)
+                return Result.Fail(ErrorMessages.FailedToUpdateContainer);
+    
             _memoryCache.Set(cacheKey, response, options);
 
             return Result.Ok();
