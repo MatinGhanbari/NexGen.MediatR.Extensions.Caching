@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Contracts;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.Dto;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.EvictWeatherForecasts;
@@ -21,7 +22,7 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet("WeatherForecasts")]
-    public async Task<IEnumerable<WeatherForecastDto>> GetWeatherForecastsAsync(int limit = 10, int offset = 0)
+    public async Task<IEnumerable<IResponse>> GetWeatherForecastsAsync(int limit = 10, int offset = 0)
     {
         return await _mediator.Send(new WeatherForecastRequest { Limit = limit, Offset = offset });
     }

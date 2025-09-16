@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.GetWeatherForecasts;
+using NexGen.MediatR.Extensions.Caching.Redis.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 

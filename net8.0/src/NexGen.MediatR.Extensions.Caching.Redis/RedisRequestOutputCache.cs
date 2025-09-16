@@ -70,7 +70,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
-            RequestOutputCacheContainer.UpdateContainer<TRequest, TResponse>(tags, cacheKey);
+            RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
 
             await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(response), options, cancellationToken);
 
