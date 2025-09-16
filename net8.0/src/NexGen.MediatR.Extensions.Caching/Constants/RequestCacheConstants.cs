@@ -9,5 +9,5 @@ public static class RequestCacheConstants
     /// Default expiration time for cached responses, in seconds.
     /// Use this value if no custom expiration is specified.
     /// </summary>
-    public const int ExpirationInSeconds = 300;
+    public const int DefaultExpirationInSeconds = 300;
 }
