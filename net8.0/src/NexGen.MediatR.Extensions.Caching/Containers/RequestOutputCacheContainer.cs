@@ -30,23 +30,23 @@ public static class RequestOutputCacheContainer
     public static Dictionary<Type, Type> RequestResponseTypes = [];
 
     public static Type? GetResponseType<TRequest>()
-    {   
+    {
         RequestResponseTypes.TryGetValue(typeof(TRequest), out var type);
         return type;
     }
-    
-    public static Result UpdateContainer<TRequest, TResponse>(IEnumerable<string>? tags = null, string? cacheKey = null)
+
+    public static Result UpdateContainer<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type responseType = null)
     {
         try
         {
             var updateCacheTag = AddOrUpdateCacheTag<TRequest>(tags);
             var updateCacheType = AddOrUpdateCacheType<TRequest>(cacheKey);
 
-            if (updateCacheTag.IsSuccess && updateCacheType.IsSuccess) return Result.Ok();
-            
-            RequestResponseTypes.Add(typeof(TRequest), typeof(TResponse));
+            if (!updateCacheTag.IsSuccess || !updateCacheType.IsSuccess)
+                return Result.Fail(ErrorMessages.ContainerUpdatesFails);
 
-            return Result.Fail(ErrorMessages.ContainerUpdatesFails);
+            RequestResponseTypes.TryAdd(typeof(TRequest), responseType);
+            return Result.Ok();
         }
         catch (Exception exception)
         {
