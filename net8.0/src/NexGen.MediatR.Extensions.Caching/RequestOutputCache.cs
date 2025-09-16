@@ -44,6 +44,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
+            
             return Result.Ok((TResponse)response);
         }
         catch (Exception exception)
@@ -64,7 +65,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null
             };
 
-            RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey);
+            RequestOutputCacheContainer.UpdateContainer<TRequest, TResponse>(tags, cacheKey);
 
             _memoryCache.Set(cacheKey, response, options);
 
