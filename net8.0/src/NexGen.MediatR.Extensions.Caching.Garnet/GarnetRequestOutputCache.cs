@@ -46,7 +46,9 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
-            return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
+
+            var type = RequestOutputCacheContainer.GetResponseType<TRequest>();
+            return Result.Ok((TResponse)JsonConvert.DeserializeObject(response, type ?? typeof(TResponse))!);
         }
         catch (Exception exception)
         {
@@ -66,7 +68,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
-            RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey);
+            RequestOutputCacheContainer.UpdateContainer<TRequest, TResponse>(tags, cacheKey);
 
             await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(response), options, cancellationToken);
 
