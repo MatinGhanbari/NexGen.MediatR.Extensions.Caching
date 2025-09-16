@@ -48,7 +48,9 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
-            return Result.Ok((TResponse)JsonConvert.DeserializeObject<TResponse>(response)!);
+            
+            var type = RequestOutputCacheContainer.GetResponseType<TRequest>();
+            return Result.Ok((TResponse)JsonConvert.DeserializeObject(response, type ?? typeof(TResponse))!);
         }
         catch (Exception exception)
         {
@@ -68,33 +70,7 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
-            if (tags != null)
-            {
-                foreach (var tag in tags)
-                {
-                    if (RequestOutputCacheContainer.CacheTags.TryGetValue(tag, out HashSet<Type>? tagTypes))
-                    {
-                        tagTypes ??= [];
-                        tagTypes.Add(typeof(TRequest));
-                    }
-                    else
-                    {
-                        tagTypes = [typeof(TRequest)];
-                        RequestOutputCacheContainer.CacheTags.TryAdd(tag, tagTypes);
-                    }
-                }
-            }
-
-            if (RequestOutputCacheContainer.CacheTypes.TryGetValue(typeof(TRequest), out HashSet<string>? cacheTypes))
-            {
-                cacheTypes ??= [];
-                cacheTypes.Add(cacheKey);
-            }
-            else
-            {
-                cacheTypes = [cacheKey];
-                RequestOutputCacheContainer.CacheTypes.TryAdd(typeof(TRequest), cacheTypes);
-            }
+            RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
 
             await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(response), options, cancellationToken);
 

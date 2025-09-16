@@ -44,6 +44,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
+            
             return Result.Ok((TResponse)response);
         }
         catch (Exception exception)
@@ -64,33 +65,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null
             };
 
-            if (tags != null)
-            {
-                foreach (var tag in tags)
-                {
-                    if (RequestOutputCacheContainer.CacheTags.TryGetValue(tag, out HashSet<Type>? tagTypes))
-                    {
-                        tagTypes ??= [];
-                        tagTypes.Add(typeof(TRequest));
-                    }
-                    else
-                    {
-                        tagTypes = [typeof(TRequest)];
-                        RequestOutputCacheContainer.CacheTags.TryAdd(tag, tagTypes);
-                    }
-                }
-            }
-
-            if (RequestOutputCacheContainer.CacheTypes.TryGetValue(typeof(TRequest), out HashSet<string>? cacheTypes))
-            {
-                cacheTypes ??= [];
-                cacheTypes.Add(cacheKey);
-            }
-            else
-            {
-                cacheTypes = [cacheKey];
-                RequestOutputCacheContainer.CacheTypes.TryAdd(typeof(TRequest), cacheTypes);
-            }
+            RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
 
             _memoryCache.Set(cacheKey, response, options);
 

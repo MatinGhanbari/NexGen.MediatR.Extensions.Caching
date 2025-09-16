@@ -1,6 +1,8 @@
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Contracts;
+
 namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.Dto;
 
-public class WeatherForecastDto
+public class WeatherForecastDto : IResponse
 {
     public DateOnly Date { get; set; }
     public int TemperatureC { get; set; }
