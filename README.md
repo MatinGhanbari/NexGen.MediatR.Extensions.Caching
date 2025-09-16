@@ -1,4 +1,4 @@
-﻿# ⚡ NexGen.MediatR.Extensions.Caching ⚡
+# ⚡ NexGen.MediatR.Extensions.Caching
 
 ![CI](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png)
 
