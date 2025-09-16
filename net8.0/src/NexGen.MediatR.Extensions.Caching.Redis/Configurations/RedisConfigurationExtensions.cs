@@ -4,7 +4,7 @@ using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
 
-namespace NexGen.MediatR.Extensions.Caching.Redis.Extensions;
+namespace NexGen.MediatR.Extensions.Caching.Redis.Configurations;
 
 /// <summary>
 /// Provides extension methods to configure Redis caching for MediatR requests.
