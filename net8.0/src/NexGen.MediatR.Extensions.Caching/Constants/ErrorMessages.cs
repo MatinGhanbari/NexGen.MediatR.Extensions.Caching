@@ -3,11 +3,11 @@
 /// <summary>
 /// Contains standard error messages used across the MediatR output caching library.
 /// </summary>
-public class ErrorMessages
+public static class ErrorMessages
 {
-    public static readonly string ResponseNotFound = "Response not found.";
-    public static readonly string CacheHit = "Cache hit for MediatR request {RequestName}, Returning cached response.";
-    public static readonly string AlreadyConfigured = "The request output cache has already been configured.";
-    public static readonly string EmptyConnectionString = "The connection string cannot be empty.";
-    public static readonly string ContainerUpdatesFails = "Container Updates Fails.";
+    public const string ResponseNotFound = "Response not found.";
+    public const string CacheHit = "Cache hit for MediatR request {RequestName}, Returning cached response.";
+    public const string AlreadyConfigured = "The request output cache has already been configured.";
+    public const string EmptyConnectionString = "The connection string cannot be empty.";
+    public const string ContainerUpdatesFails = "Container Updates Fails.";
 }
