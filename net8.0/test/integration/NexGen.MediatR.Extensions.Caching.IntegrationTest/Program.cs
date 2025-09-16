@@ -2,10 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using NexGen.MediatR.Extensions.Caching.Configurations;
-using NexGen.MediatR.Extensions.Caching.Garnet.Extensions;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.GetWeatherForecasts;
-using NexGen.MediatR.Extensions.Caching.Redis.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

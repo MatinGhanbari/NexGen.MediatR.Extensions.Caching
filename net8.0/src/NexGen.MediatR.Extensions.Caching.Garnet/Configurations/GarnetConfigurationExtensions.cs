@@ -4,7 +4,7 @@ using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
 
-namespace NexGen.MediatR.Extensions.Caching.Garnet.Extensions;
+namespace NexGen.MediatR.Extensions.Caching.Garnet.Configurations;
 
 /// <summary>
 /// Provides extension methods to configure Garnet caching for MediatR requests.
