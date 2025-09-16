@@ -35,14 +35,15 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
     /// <param name="next">The next delegate in the MediatR pipeline.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The response either from cache or from the handler.</returns>
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         if (_requestOutputCache == null)
             return await next(cancellationToken);
 
         var attribute = (RequestOutputCacheAttribute)typeof(TRequest)
-                        .GetCustomAttributes(typeof(RequestOutputCacheAttribute), false)
-                        .FirstOrDefault()!;
+            .GetCustomAttributes(typeof(RequestOutputCacheAttribute), false)
+            .FirstOrDefault()!;
+
         if (attribute == null)
             return await next(cancellationToken);
 
