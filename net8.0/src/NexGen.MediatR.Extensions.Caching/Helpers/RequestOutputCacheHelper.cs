@@ -10,6 +10,11 @@ namespace NexGen.MediatR.Extensions.Caching.Helpers;
 public static class RequestOutputCacheHelper
 {
     /// <summary>
+    /// The SHA-256 hash instance.
+    /// </summary>
+    private static readonly SHA256 Sha256 = SHA256.Create(); 
+    
+    /// <summary>
     /// Generates a unique cache key for the specified request by serializing it
     /// and computing the SHA-256 hash.
     /// </summary>
@@ -27,7 +32,7 @@ public static class RequestOutputCacheHelper
 
         // Compute SHA-256 hash of the serialized request
         var source = Encoding.UTF8.GetBytes(serialized);
-        var hashBytes = SHA256.HashData(source);
+        var hashBytes = Sha256.ComputeHash(source);
 
         // Convert hash bytes to a lowercase hexadecimal string
         var hashString = BitConverter
