@@ -18,7 +18,7 @@ public class RequestOutputCacheAttribute : Attribute
     /// <summary>
     /// Gets the expiration time of the cache entry, in seconds.
     /// If set to <c>0</c>, the cache entry never expires.
-    /// Defaults to <see cref="RequestCacheConstants.ExpirationInSeconds"/>.
+    /// Defaults to <see cref="RequestCacheConstants.DefaultExpirationInSeconds"/>.
     /// </summary>
     public int ExpirationInSeconds { get; }
 
@@ -29,10 +29,10 @@ public class RequestOutputCacheAttribute : Attribute
     /// An array of tags to associate with the cache entry. Used for grouping and invalidation.
     /// </param>
     /// <param name="expirationInSeconds">
-    /// The cache lifetime in seconds. Optional. Set it Zero to never expire cache. Defaults to <see cref="RequestCacheConstants.ExpirationInSeconds"/>.
+    /// The cache lifetime in seconds. Optional. Set it Zero to never expire cache. Defaults to <see cref="RequestCacheConstants.DefaultExpirationInSeconds"/>.
     /// If set to <c>0</c>, the cache entry never expires.
     /// </param>
-    public RequestOutputCacheAttribute(string[] tags, int expirationInSeconds = RequestCacheConstants.ExpirationInSeconds)
+    public RequestOutputCacheAttribute(string[] tags, int expirationInSeconds = RequestCacheConstants.DefaultExpirationInSeconds)
     {
         Tags = tags;
         ExpirationInSeconds = expirationInSeconds;

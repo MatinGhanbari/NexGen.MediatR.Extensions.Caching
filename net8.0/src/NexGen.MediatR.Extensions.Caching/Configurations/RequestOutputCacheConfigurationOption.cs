@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
 
@@ -29,9 +30,10 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
     public void UseMemoryCache()
     {
         if (RequestOutputCacheType != default)
-            throw new Exception("MediatR Response Cache already added.");
+            throw new InvalidOperationException(ErrorMessages.AlreadyConfigured);
 
-        if (Services == null) throw new ArgumentNullException(nameof(Services));
+        if (Services == null) 
+            throw new ArgumentNullException(nameof(Services));
 
         RequestOutputCacheType = RequestOutputCacheType.MemoryCache;
 
