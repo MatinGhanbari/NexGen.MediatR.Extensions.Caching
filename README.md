@@ -74,8 +74,8 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 ### Step 2: Using Caching Services
 
 Add `RequestOutputCache` attribute to your `IRequest` class:
-> [!WARNING]
-> The request class must implement `IRequest<Response>` where `Response` is **not an interface**!
+> [!Note]
+> The request class must implement `IRequest<TResponse>` where TResponse is class, record or interface (the mediator request format)!
 
 ```csharp
 [RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
