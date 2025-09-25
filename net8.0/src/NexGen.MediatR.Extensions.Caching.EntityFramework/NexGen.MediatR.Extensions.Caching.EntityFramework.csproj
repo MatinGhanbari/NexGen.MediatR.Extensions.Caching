@@ -6,10 +6,10 @@
 		<Nullable>enable</Nullable>
 
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Title>NexGen.MediatR.Extensions.Caching.Garnet</Title>
-		<Description>NexGen.MediatR.Extensions.Caching.Garnet</Description>
+		<Title>NexGen.MediatR.Extensions.Caching.EntityFramework</Title>
+		<Description>NexGen.MediatR.Extensions.Caching.EntityFramework</Description>
 		<Authors>MatinGhanbari</Authors>
-		<AssemblyName>NexGen.MediatR.Extensions.Caching.Garnet</AssemblyName>
+		<AssemblyName>NexGen.MediatR.Extensions.Caching.EntityFramework</AssemblyName>
 		<Copyright>© 2025 MatinGhanbari</Copyright>
 
 		<Version>1.0.6</Version>
@@ -21,7 +21,7 @@
 		<RepositoryUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</PackageProjectUrl>
 		<PackageIcon>logo-min.png</PackageIcon>
-		<PackageTags>Mediator;MediatR;Caching;Cache;Garnet;MemoryCache</PackageTags>
+		<PackageTags>Mediator;MediatR;Caching;Cache;Redis;MemoryCache;EF;EFCore;EntityFramework;Extensions</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -40,10 +40,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.20" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
 	</ItemGroup>
+
 </Project>

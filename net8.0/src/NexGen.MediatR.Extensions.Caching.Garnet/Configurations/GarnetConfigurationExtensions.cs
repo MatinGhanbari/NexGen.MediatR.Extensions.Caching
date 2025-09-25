@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
@@ -40,5 +41,6 @@ public static class GarnetConfigurationExtensions
 
         // Register the Garnet request output cache implementation
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(GarnetRequestOutputCache<,>));
+        options.Services.AddScoped<IRequestOutputCacheInvalidator, GarnetRequestOutputCache<IRequest<object>, object>>();
     }
 }

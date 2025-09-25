@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
@@ -40,5 +41,6 @@ public static class RedisConfigurationExtensions
 
         // Register the Redis request output cache implementation
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RedisRequestOutputCache<,>));
+        options.Services.AddScoped<IRequestOutputCacheInvalidator, RedisRequestOutputCache<IRequest<object>, object>>();
     }
 }

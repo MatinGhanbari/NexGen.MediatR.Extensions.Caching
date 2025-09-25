@@ -8,7 +8,8 @@ namespace NexGen.MediatR.Extensions.Caching.Contracts;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request. Must implement <see cref="IRequest{TResponse}"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response. Must be a class type.</typeparam>
-public interface IRequestOutputCache<in TRequest, TResponse> where TRequest : IRequest<TResponse>
+public interface IRequestOutputCache<in TRequest, TResponse>
+    : IRequestOutputCacheInvalidator where TRequest : IRequest<TResponse>
 {
     /// <summary>
     /// Retrieves a cached response for the specified request.
@@ -30,12 +31,4 @@ public interface IRequestOutputCache<in TRequest, TResponse> where TRequest : IR
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A <see cref="Result"/> indicating success or failure.</returns>
     Task<Result> SetAsync(TRequest request, TResponse response, IEnumerable<string>? tags = null, int expirationInSeconds = default, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Evicts cached entries associated with the specified tags.
-    /// </summary>
-    /// <param name="tags">The tags whose associated cache entries should be evicted.</param>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
-    /// <returns>A <see cref="Result"/> indicating success or failure of the eviction.</returns>
-    Task<Result> EvictByTagsAsync(IEnumerable<string> tags, CancellationToken cancellationToken = default);
 }

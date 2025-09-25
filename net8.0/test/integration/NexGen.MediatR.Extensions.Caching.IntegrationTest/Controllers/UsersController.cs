@@ -1,0 +1,33 @@
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.CreateUser;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.GetUsers;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities;
+
+namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Controllers;
+
+[ApiController]
+[Route("/api/[controller]")]
+public class UsersController : ControllerBase
+{
+    private readonly ILogger<UsersController> _logger;
+    private readonly IMediator _mediator;
+
+    public UsersController(ILogger<UsersController> logger, IMediator mediator)
+    {
+        _logger = logger;
+        _mediator = mediator;
+    }
+
+    [HttpGet("/api/[controller]/users")]
+    public async Task<List<UserEntity>> GetUsersAsync([FromQuery] int limit = 10, [FromQuery] int offset = 0)
+    {
+        return await _mediator.Send(new GetUsersRequest(limit, offset));
+    }
+
+    [HttpPost("/api/[controller]/users")]
+    public async Task CreateUserAsync([FromBody] CreateUserRequest request)
+    {
+        await _mediator.Send(request);
+    }
+}

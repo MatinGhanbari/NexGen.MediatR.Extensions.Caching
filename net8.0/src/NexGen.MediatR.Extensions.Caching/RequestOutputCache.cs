@@ -44,7 +44,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
-            
+
             return Result.Ok((TResponse)response);
         }
         catch (Exception exception)
@@ -66,9 +66,9 @@ public sealed class RequestOutputCache<TRequest, TResponse>
             };
 
             var containerResult = RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
-            if(containerResult.IsFailed)
+            if (containerResult.IsFailed)
                 return Result.Fail(ErrorMessages.FailedToUpdateContainer);
-    
+
             _memoryCache.Set(cacheKey, response, options);
 
             return Result.Ok();
