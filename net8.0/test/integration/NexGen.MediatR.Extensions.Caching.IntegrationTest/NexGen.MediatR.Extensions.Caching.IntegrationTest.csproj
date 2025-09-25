@@ -8,21 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="WeatherForecasts\NewFolder\**" />
-    <Content Remove="WeatherForecasts\NewFolder\**" />
-    <EmbeddedResource Remove="WeatherForecasts\NewFolder\**" />
-    <None Remove="WeatherForecasts\NewFolder\**" />
-  </ItemGroup>
-
-  <ItemGroup>
 	<PackageReference Include="MediatR" Version="13.0.0" />
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\NexGen.MediatR.Extensions.EntityFramework\NexGen.MediatR.Extensions.EntityFramework.csproj" />
     <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj" />
     <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj" />
     <ProjectReference Include="..\..\..\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />

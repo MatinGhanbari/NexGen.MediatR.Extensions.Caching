@@ -44,7 +44,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 return Result.Fail(ErrorMessages.ResponseNotFound);
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
-            
+
             return Result.Ok((TResponse)response);
         }
         catch (Exception exception)
@@ -66,9 +66,9 @@ public sealed class RequestOutputCache<TRequest, TResponse>
             };
 
             var containerResult = RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
-            if(containerResult.IsFailed)
+            if (containerResult.IsFailed)
                 return Result.Fail(ErrorMessages.FailedToUpdateContainer);
-    
+
             _memoryCache.Set(cacheKey, response, options);
 
             return Result.Ok();
@@ -78,6 +78,40 @@ public sealed class RequestOutputCache<TRequest, TResponse>
             _logger.LogError(exception, exception.Message);
             return Result.Fail(exception.Message);
         }
+    }
+
+
+    /// <inheritdoc />
+    public async Task<Result> EvictByEntityTypeAsync(IEnumerable<Type> types, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            foreach (var type in types)
+            {
+                if (!RequestOutputCacheContainer.CacheTypes.TryGetValue(type, out HashSet<string>? cacheKeys))
+                    continue;
+
+                cacheKeys ??= [];
+                await EvictCacheKeysAsync(cacheKeys, cancellationToken);
+            }
+
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, exception.Message);
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    private async Task<Result> EvictCacheKeysAsync(HashSet<string> cacheKeys, CancellationToken cancellationToken = default)
+    {
+        foreach (var cacheKey in cacheKeys.TakeWhile(_ => !cancellationToken.IsCancellationRequested))
+        {
+            _memoryCache.Remove(cacheKey);
+        }
+
+        return Result.Ok();
     }
 
     /// <inheritdoc />

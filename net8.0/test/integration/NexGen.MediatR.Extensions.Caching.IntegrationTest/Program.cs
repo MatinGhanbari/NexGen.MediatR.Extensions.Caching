@@ -1,11 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using NexGen.MediatR.Extensions.Caching.Configurations;
-using NexGen.MediatR.Extensions.Caching.Garnet.Configurations;
-using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts;
-using NexGen.MediatR.Extensions.Caching.IntegrationTest.WeatherForecasts.GetWeatherForecasts;
-using NexGen.MediatR.Extensions.Caching.Redis.Configurations;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
+using NexGen.MediatR.Extensions.EntityFramework.Configurations;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +12,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // MediatR Services
-builder.Services.AddMediatR(opt => opt.RegisterServicesFromAssembly(typeof(WeatherForecastRequest).Assembly));
+builder.Services.AddMediatR(opt =>
+    opt.RegisterServicesFromAssembly(Assembly.GetEntryAssembly()!));
+
 builder.Services.AddMediatROutputCache(opt =>
 {
     opt.UseMemoryCache();
     // opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis")!);
     // opt.UseGarnetCache(builder.Configuration.GetConnectionString("Garnet")!);
+
+    opt.UseEntityFrameworkAutoEvict<AppDbContext>(contextOptionsBuilder =>
+    {
+        var sqlServerConnectionString = builder.Configuration.GetConnectionString("SqlServer");
+        contextOptionsBuilder.UseSqlServer(sqlServerConnectionString);
+    });
 });
 
 var app = builder.Build();

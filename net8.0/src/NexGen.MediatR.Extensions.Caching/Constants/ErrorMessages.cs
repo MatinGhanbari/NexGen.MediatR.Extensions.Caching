@@ -12,5 +12,6 @@ public static class ErrorMessages
     public const string AlreadyConfigured = "The request output cache has already been configured.";
     public const string EmptyConnectionString = "The connection string cannot be empty.";
     public const string ContainerUpdatesFails = "Container Updates Fails.";
-    public const string FailedToUpdateContainer = "Failed to update the cache container";
+    public const string FailedToUpdateContainer = "Failed to update the cache container.";
+    public const string UnableToEvictEntitiesOnDbSaveChange = "Unable to evict entities on entity framework database save change.";
 }

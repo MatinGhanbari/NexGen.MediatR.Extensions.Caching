@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
@@ -32,12 +33,13 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
         if (RequestOutputCacheType != default)
             throw new InvalidOperationException(ErrorMessages.AlreadyConfigured);
 
-        if (Services == null) 
+        if (Services == null)
             throw new ArgumentNullException(nameof(Services));
 
         RequestOutputCacheType = RequestOutputCacheType.MemoryCache;
 
         Services.AddMemoryCache();
         Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RequestOutputCache<,>));
+        Services.AddScoped<IRequestOutputCacheInvalidator, RequestOutputCache<IRequest<object>, object>>();
     }
 }
