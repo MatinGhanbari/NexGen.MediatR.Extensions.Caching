@@ -1,9 +1,9 @@
 ﻿using MediatR;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.Requests;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities;
-using NexGen.MediatR.Extensions.Caching.IntegrationTest.Requests;
 
-namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.RequestHandlers;
+namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.RequestHandlers;
 
 public class CreateUserRequestHandler : IRequestHandler<CreateUserRequest>
 {
@@ -18,7 +18,6 @@ public class CreateUserRequestHandler : IRequestHandler<CreateUserRequest>
     {
         await _dbContext.Users.AddAsync(new UserEntity()
         {
-            Id = Guid.NewGuid(),
             Name = request.Name,
             Age = request.Age
         }, cancellationToken);

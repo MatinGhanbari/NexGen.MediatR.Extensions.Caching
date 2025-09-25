@@ -12,7 +12,7 @@ using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
 namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250925125604_initial")]
+    [Migration("20250925212658_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -33,6 +33,9 @@ namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
 
                     b.Property<int>("Age")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationDateTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()

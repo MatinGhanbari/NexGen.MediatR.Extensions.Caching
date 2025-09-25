@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.Requests;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities;
-using NexGen.MediatR.Extensions.Caching.IntegrationTest.Requests;
 
 namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Controllers;
 

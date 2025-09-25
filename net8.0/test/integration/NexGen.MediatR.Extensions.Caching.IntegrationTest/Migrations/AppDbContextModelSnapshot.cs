@@ -31,6 +31,9 @@ namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
                     b.Property<int>("Age")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreationDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
