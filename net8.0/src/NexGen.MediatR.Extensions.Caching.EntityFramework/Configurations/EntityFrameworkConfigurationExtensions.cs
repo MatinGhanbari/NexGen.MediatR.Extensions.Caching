@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using NexGen.MediatR.Extensions.Caching.Configurations;
 
 namespace NexGen.MediatR.Extensions.Caching.EntityFramework.Configurations;
 

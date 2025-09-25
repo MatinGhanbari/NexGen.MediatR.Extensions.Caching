@@ -1,8 +1,8 @@
-using NexGen.MediatR.Extensions.Caching.Configurations;
-using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
-using NexGen.MediatR.Extensions.EntityFramework.Configurations;
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using NexGen.MediatR.Extensions.Caching.Configurations;
+using NexGen.MediatR.Extensions.Caching.EntityFramework.Configurations;
+using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,10 +21,10 @@ builder.Services.AddMediatROutputCache(opt =>
     // opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis")!);
     // opt.UseGarnetCache(builder.Configuration.GetConnectionString("Garnet")!);
 
-    opt.UseEntityFrameworkAutoEvict<AppDbContext>(contextOptionsBuilder =>
+    opt.UseEntityFrameworkAutoEvict<AppDbContext>(optBuilder =>
     {
         var sqlServerConnectionString = builder.Configuration.GetConnectionString("SqlServer");
-        contextOptionsBuilder.UseSqlServer(sqlServerConnectionString);
+        optBuilder.UseSqlServer(sqlServerConnectionString);
     });
 });
 

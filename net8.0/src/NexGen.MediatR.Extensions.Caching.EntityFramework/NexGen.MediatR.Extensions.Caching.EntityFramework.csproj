@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\net8.0\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
+    <ProjectReference Include="..\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
   </ItemGroup>
 
 </Project>
