@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Garnet", "net8.0\src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj", "{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.EntityFramework", "NexGen.MediatR.Extensions.EntityFramework\NexGen.MediatR.Extensions.EntityFramework.csproj", "{F7F4BA59-5660-4ADF-BC0F-F9692267C6D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.EntityFramework", "net8.0\src\NexGen.MediatR.Extensions.Caching.EntityFramework\NexGen.MediatR.Extensions.Caching.EntityFramework.csproj", "{F7F4BA59-5660-4ADF-BC0F-F9692267C6D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
