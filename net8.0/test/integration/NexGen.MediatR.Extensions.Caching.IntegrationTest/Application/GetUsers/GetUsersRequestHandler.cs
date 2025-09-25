@@ -1,10 +1,9 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.Requests;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
 using NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities;
 
-namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.RequestHandlers;
+namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Application.GetUsers;
 
 public class GetUsersRequestHandler : IRequestHandler<GetUsersRequest, List<UserEntity>>
 {
@@ -21,6 +20,7 @@ public class GetUsersRequestHandler : IRequestHandler<GetUsersRequest, List<User
 
         return await _dbContext.Users
             .AsNoTracking()
+            .Include(x => x.Orders)
             .OrderByDescending(x => x.CreationDateTime)
             .Skip(request.Offset)
             .Take(request.Limit)

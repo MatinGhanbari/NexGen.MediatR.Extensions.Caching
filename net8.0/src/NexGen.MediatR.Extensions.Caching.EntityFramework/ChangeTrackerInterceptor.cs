@@ -21,6 +21,7 @@ public class ChangeTrackerInterceptor : SaveChangesInterceptor
             return await base.SavedChangesAsync(eventData, result, cancellationToken);
 
         var entries = context.ChangeTracker.Entries();
+        var test = entries.ToList();
 
         using var scope = _serviceProvider.CreateScope();
         var cacheInvalidator = scope.ServiceProvider.GetRequiredService<IRequestOutputCacheInvalidator>();

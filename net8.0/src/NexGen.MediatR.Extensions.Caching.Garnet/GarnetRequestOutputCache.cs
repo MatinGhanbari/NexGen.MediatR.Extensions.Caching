@@ -106,11 +106,6 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
         }
     }
 
-    public Task<Result> EvictByEntityTypeAsync(IEnumerable<Type> types, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <summary>
     /// Removes all cache entries for the specified request types.
     /// </summary>

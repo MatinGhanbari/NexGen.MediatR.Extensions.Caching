@@ -22,6 +22,28 @@ namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.OrderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("UserEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserEntityId");
+
+                    b.ToTable("Orders");
+                });
+
             modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -42,6 +64,18 @@ namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.OrderEntity", b =>
+                {
+                    b.HasOne("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.UserEntity", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("UserEntityId");
+                });
+
+            modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.UserEntity", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

@@ -12,7 +12,7 @@ using NexGen.MediatR.Extensions.Caching.IntegrationTest.Context;
 namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250925212658_initial")]
+    [Migration("20250925225819_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -24,6 +24,28 @@ namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.OrderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("UserEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserEntityId");
+
+                    b.ToTable("Orders");
+                });
 
             modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.UserEntity", b =>
                 {
@@ -45,6 +67,18 @@ namespace NexGen.MediatR.Extensions.Caching.IntegrationTest.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.OrderEntity", b =>
+                {
+                    b.HasOne("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.UserEntity", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("UserEntityId");
+                });
+
+            modelBuilder.Entity("NexGen.MediatR.Extensions.Caching.IntegrationTest.Entities.UserEntity", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

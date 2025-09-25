@@ -80,40 +80,6 @@ public sealed class RequestOutputCache<TRequest, TResponse>
         }
     }
 
-
-    /// <inheritdoc />
-    public async Task<Result> EvictByEntityTypeAsync(IEnumerable<Type> types, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            foreach (var type in types)
-            {
-                if (!RequestOutputCacheContainer.CacheTypes.TryGetValue(type, out HashSet<string>? cacheKeys))
-                    continue;
-
-                cacheKeys ??= [];
-                await EvictCacheKeysAsync(cacheKeys, cancellationToken);
-            }
-
-            return Result.Ok();
-        }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, exception.Message);
-            return Result.Fail(exception.Message);
-        }
-    }
-
-    private async Task<Result> EvictCacheKeysAsync(HashSet<string> cacheKeys, CancellationToken cancellationToken = default)
-    {
-        foreach (var cacheKey in cacheKeys.TakeWhile(_ => !cancellationToken.IsCancellationRequested))
-        {
-            _memoryCache.Remove(cacheKey);
-        }
-
-        return Result.Ok();
-    }
-
     /// <inheritdoc />
     public async Task<Result> EvictByTagsAsync(IEnumerable<string> tags, CancellationToken cancellationToken = default)
     {

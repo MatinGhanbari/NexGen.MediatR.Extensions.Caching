@@ -1,25 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 
 namespace NexGen.MediatR.Extensions.Caching.EntityFramework.Configurations;
 
 public static class EntityFrameworkCoreConfigurationExtensions
 {
-    public static void UseEntityFrameworkAutoEvict<T>(this RequestOutputCacheConfigurationOption options, Action<DbContextOptionsBuilder> dbContextOptionsAction) where T : DbContext
+    public static void UseMediatROutputCacheAutoEvict(this DbContextOptionsBuilder optionsBuilder, IServiceProvider serviceProvider)
     {
-        if (options == null)
-            throw new ArgumentNullException(nameof(options));
+        if (optionsBuilder == null)
+            throw new ArgumentNullException(nameof(optionsBuilder));
 
-        if (dbContextOptionsAction == null)
-            throw new ArgumentNullException(nameof(dbContextOptionsAction));
-
-        options.Services.AddScoped<ChangeTrackerInterceptor>();
-
-        options.Services.AddDbContext<T>((sp, dbOptions) =>
-        {
-            dbContextOptionsAction(dbOptions);
-            dbOptions.AddInterceptors(sp.GetRequiredService<ChangeTrackerInterceptor>());
-        });
+        var interceptor = new ChangeTrackerInterceptor(serviceProvider);
+        optionsBuilder.AddInterceptors(interceptor);
     }
 }
