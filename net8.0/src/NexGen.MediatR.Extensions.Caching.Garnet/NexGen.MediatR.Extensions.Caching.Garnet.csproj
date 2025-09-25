@@ -1,50 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Title>NexGen.MediatR.Extensions.Caching.Garnet</Title>
-	<Description>NexGen.MediatR.Extensions.Caching.Garnet</Description>
-	<Authors>MatinGhanbari</Authors>
-	<AssemblyName>NexGen.MediatR.Extensions.Caching.Garnet</AssemblyName>
-	<Copyright>© 2025 MatinGhanbari</Copyright>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>NexGen.MediatR.Extensions.Caching.Garnet</Title>
+		<Description>NexGen.MediatR.Extensions.Caching.Garnet</Description>
+		<Authors>MatinGhanbari</Authors>
+		<AssemblyName>NexGen.MediatR.Extensions.Caching.Garnet</AssemblyName>
+		<Copyright>© 2025 MatinGhanbari</Copyright>
 
-	<Version>1.0.6</Version>
-	<PackageReleaseNotes>Release v1.0.6</PackageReleaseNotes>
-	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<RepositoryType>git</RepositoryType>
-	<RepositoryUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</RepositoryUrl>
-	<PackageProjectUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</PackageProjectUrl>
-	<PackageIcon>logo-min.png</PackageIcon>
-	<PackageTags>Mediator;MediatR;Caching;Cache;Garnet;MemoryCache</PackageTags>
-  </PropertyGroup>
+		<Version>1.0.6</Version>
+		<PackageReleaseNotes>Release v1.0.6</PackageReleaseNotes>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</PackageProjectUrl>
+		<PackageIcon>logo-min.png</PackageIcon>
+		<PackageTags>Mediator;MediatR;Caching;Cache;Garnet;MemoryCache</PackageTags>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\..\assets\images\logo-min.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\..\assets\images\logo-min.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.20" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.20" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
+	</ItemGroup>
 </Project>
