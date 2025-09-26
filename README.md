@@ -225,7 +225,7 @@ public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForeca
 ```
 
 > [!NOTE]
-> See Integration Test in test folder to see for example.
+> See **IntegrationTests** in `net8.0/test` folder to see for example.
 
 ## 📈 Benchmarks
 
