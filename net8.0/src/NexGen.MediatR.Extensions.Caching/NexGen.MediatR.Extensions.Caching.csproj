@@ -12,8 +12,8 @@
 		<AssemblyName>NexGen.MediatR.Extensions.Caching</AssemblyName>
 		<Copyright>© 2025 MatinGhanbari</Copyright>
 
-		<Version>1.0.6</Version>
-		<PackageReleaseNotes>Release v1.0.6</PackageReleaseNotes>
+		<Version>1.0.7</Version>
+		<PackageReleaseNotes>Release v1.0.7</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -21,7 +21,7 @@
 		<RepositoryUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</PackageProjectUrl>
 		<PackageIcon>logo-min.png</PackageIcon>
-		<PackageTags>Mediator;MediatR;Caching;Cache;Redis;MemoryCache</PackageTags>
+		<PackageTags>Mediator;MediatR;Caching;Cache;Redis;MemoryCache;CQRS;CommandHandler;QueryHandler;MessageBus;EventBus;PubSub;InMemoryCache;DistributedCache;AsyncMessaging;DataCaching;CacheProvider;HighPerformanceCaching;ThreadSafeCache</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
