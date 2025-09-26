@@ -64,6 +64,12 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 
 - Using `Redis` (`NexGen.MediatR.Extensions.Caching.Redis`)
 
+  Installation:
+  ```bash
+  dotnet add package NexGen.MediatR.Extensions.Caching.Redis
+  ```
+
+  Configuration:
   ```csharp
   builder.Services.AddMediatROutputCache(opt =>
   {
@@ -74,6 +80,12 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 
 - Using `Garnet` (`NexGen.MediatR.Extensions.Caching.Garnet`)
 
+  Installation:
+  ```bash
+  dotnet add package NexGen.MediatR.Extensions.Caching.Garnet
+  ```
+
+  Configuration:
   ```csharp
   builder.Services.AddMediatROutputCache(opt =>
   {
@@ -84,6 +96,12 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
 
 - Using `EntityFramework Auto Evict` (`NexGen.MediatR.Extensions.Caching.EntityFramework`)
 
+  Installation:
+  ```bash
+  dotnet add package NexGen.MediatR.Extensions.Caching.EntityFramework
+  ```
+
+  Configuration:
   ```csharp
   builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
   {
