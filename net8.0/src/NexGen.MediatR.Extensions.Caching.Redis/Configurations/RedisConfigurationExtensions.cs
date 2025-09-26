@@ -4,6 +4,7 @@ using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
+using NexGen.MediatR.Extensions.Caching.Redis.Containers;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis.Configurations;
 
@@ -42,5 +43,6 @@ public static class RedisConfigurationExtensions
         // Register the Redis request output cache implementation
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RedisRequestOutputCache<,>));
         options.Services.AddScoped<IRequestOutputCacheInvalidator, RedisRequestOutputCache<IRequest<object>, object>>();
+        options.Services.AddScoped<IRequestOutputCacheContainer, RedisOutputCacheContainer>();
     }
 }
