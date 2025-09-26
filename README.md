@@ -25,10 +25,11 @@ This library integrates caching as a cross-cutting concern, enabling developers 
 
 - **Seamless Integration**: Adds caching to MediatR requests using pipeline behaviors.
 - **Flexible Cache Storage**: Supports both in-memory (`IMemoryCache`) 💾 and distributed caching (`IDistributedCache`) 🌐.
-- **Automatic Cache Invalidation**: Invalidate cached requests based on other requests or notifications.
+- **Automatic Cache Invalidation**: Invalidate cached requests based on other requests or EntityFramework ChangeTracker.
 - **Customizable Cache Options**: Configure expiration ⏳, sliding expiration, and cache keys per request.
 - **ASP.NET Core Compatibility**: Works with ASP.NET Core’s DI and caching infrastructure.
 - **Extensible Design**: Easily extend or customize caching behavior to suit your needs.
+- **Server Sync**: This library use sync data with server for using in microservice applications.
 
 ## 📦 Installation
 
@@ -66,8 +67,31 @@ In your `Startup.cs` or `Program.cs`, register MediatR and caching:
   ```csharp
   builder.Services.AddMediatROutputCache(opt =>
   {
-      var redisConnectionString = "localhost:6379,password=YourPassword";
+      var redisConnectionString = "localhost:6379,password=YourRedisPassword";
       opt.UseRedisCache(redisConnectionString);
+  });
+  ```
+
+- Using `Garnet` (`NexGen.MediatR.Extensions.Caching.Garnet`)
+
+  ```csharp
+  builder.Services.AddMediatROutputCache(opt =>
+  {
+      var garnetConnectionString = "localhost:6379,password=YourGarnetPassword";
+      opt.UseGarnetCache(garnetConnectionString);
+  });
+  ```
+
+- Using `EntityFramework Auto Evict` (`NexGen.MediatR.Extensions.Caching.EntityFramework`)
+
+  ```csharp
+  builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
+  {
+    // Other dbcontext settings
+    ...
+
+    // Use this method to set auto evict based on EF change tracker
+    optionsBuilder.UseMediatROutputCacheAutoEvict(sp);
   });
   ```
 
@@ -77,8 +101,12 @@ Add `RequestOutputCache` attribute to your `IRequest` class:
 > [!Note]
 > The request class must implement `IRequest<TResponse>` where TResponse is class, record or interface (the mediator request format)!
 
+> [!Important]
+> If you want to use EntityFramework ChangeTracker auto evict to invalidate the cache based on database dbset changes,
+> Provide nameof all db entities that are related to the response. e.g. `tags: [nameof(UserDbEntity), nameof(OrderDbEntity)]`
+
 ```csharp
-[RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
+[RequestOutputCache(tags: ["weather", nameof(WeatherForecastDbEntity)], expirationInSeconds: 3600)]
 public class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
 {
     public int Limit { get; set; } = 10;
@@ -107,6 +135,9 @@ public class TestClass
     }
 }
 ```
+
+> [!Note]
+> If you configure EntityFramework to detect change of cached items, you dont need to evict records by yourself.  
 
 ## 💡 Examples
 
