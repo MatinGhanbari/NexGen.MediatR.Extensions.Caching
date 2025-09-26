@@ -4,6 +4,7 @@ using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
+using NexGen.MediatR.Extensions.Caching.Garnet.Containers;
 
 namespace NexGen.MediatR.Extensions.Caching.Garnet.Configurations;
 
@@ -42,5 +43,6 @@ public static class GarnetConfigurationExtensions
         // Register the Garnet request output cache implementation
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(GarnetRequestOutputCache<,>));
         options.Services.AddScoped<IRequestOutputCacheInvalidator, GarnetRequestOutputCache<IRequest<object>, object>>();
+        options.Services.AddScoped<IRequestOutputCacheContainer, GarnetOutputCacheContainer>();
     }
 }

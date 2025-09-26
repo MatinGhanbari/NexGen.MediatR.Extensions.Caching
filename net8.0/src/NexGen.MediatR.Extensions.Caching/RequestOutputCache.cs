@@ -19,18 +19,22 @@ public sealed class RequestOutputCache<TRequest, TResponse>
 {
     private readonly ILogger<RequestOutputCache<TRequest, TResponse>> _logger;
     private readonly IMemoryCache _memoryCache;
+    private readonly IRequestOutputCacheContainer _cacheContainer;
 
     /// <summary>
     /// Initializes a new instance of <see cref="RequestOutputCache{TRequest, TResponse}"/>.
     /// </summary>
     /// <param name="logger">The logger to log cache hits and errors.</param>
     /// <param name="memoryCache">The memory cache used for storing responses.</param>
+    /// <param name="cacheContainer">The cache container</param>
     public RequestOutputCache(
         ILogger<RequestOutputCache<TRequest, TResponse>> logger,
-        IMemoryCache memoryCache)
+        IMemoryCache memoryCache,
+        IRequestOutputCacheContainer cacheContainer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+        _cacheContainer = cacheContainer ?? throw new ArgumentNullException(nameof(cacheContainer));
     }
 
     /// <inheritdoc />
@@ -65,7 +69,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null
             };
 
-            var containerResult = RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
+            var containerResult = await _cacheContainer.UpdateContainerAsync<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse), cancellationToken);
             if (containerResult.IsFailed)
                 return Result.Fail(ErrorMessages.FailedToUpdateContainer);
 
@@ -87,7 +91,7 @@ public sealed class RequestOutputCache<TRequest, TResponse>
         {
             foreach (var tag in tags)
             {
-                if (!RequestOutputCacheContainer.CacheTags.TryGetValue(tag, out HashSet<Type>? tagTypes))
+                if (!_cacheContainer.GetCacheTagsAsync(cancellationToken).Result.TryGetValue(tag, out HashSet<string>? tagTypes))
                     continue;
 
                 tagTypes ??= [];
@@ -109,11 +113,11 @@ public sealed class RequestOutputCache<TRequest, TResponse>
     /// <param name="tagTypes">The request types whose cache entries should be evicted.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A successful <see cref="Result"/> when eviction completes.</returns>
-    private async Task<Result> EvictTypesAsync(HashSet<Type> tagTypes, CancellationToken cancellationToken = default)
+    private async Task<Result> EvictTypesAsync(HashSet<string> tagTypes, CancellationToken cancellationToken = default)
     {
         foreach (var tagType in tagTypes.TakeWhile(_ => !cancellationToken.IsCancellationRequested))
         {
-            if (!RequestOutputCacheContainer.CacheTypes.TryGetValue(tagType, out HashSet<string>? cacheTypes))
+            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string>? cacheTypes))
                 continue;
 
             foreach (var cacheType in cacheTypes)
