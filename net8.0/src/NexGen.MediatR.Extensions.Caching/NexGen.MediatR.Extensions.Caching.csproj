@@ -17,7 +17,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryType>git</RepositoryType>
+		<RepositoryType>git</RepositoryType> 
 		<RepositoryUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching</PackageProjectUrl>
 		<PackageIcon>logo-min.png</PackageIcon>
