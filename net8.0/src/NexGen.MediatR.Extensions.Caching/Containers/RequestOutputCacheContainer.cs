@@ -1,41 +1,40 @@
 ﻿using FluentResults;
 using NexGen.MediatR.Extensions.Caching.Constants;
+using NexGen.MediatR.Extensions.Caching.Contracts;
+using System.Collections.ObjectModel;
 
 namespace NexGen.MediatR.Extensions.Caching.Containers;
 
-/// <summary>
-/// A static container that holds mapping information for cached request types and tags.
-/// </summary>
-public static class RequestOutputCacheContainer
+public class RequestOutputCacheContainer : IRequestOutputCacheContainer
 {
     /// <summary>
     /// Maps request types to a set of associated cache tags.
     /// Key: request type (<see cref="Type"/>)
     /// Value: set of tags (<see cref="HashSet{String}"/>)
     /// </summary>
-    public static Dictionary<Type, HashSet<string?>> CacheTypes = [];
+    public Dictionary<string, HashSet<string?>> CacheTypes = [];
 
     /// <summary>
     /// Maps cache tags to a set of request types that use them.
     /// Key: cache tag (<see cref="string"/>)
     /// Value: set of request types (<see cref="HashSet{Type}"/>)
     /// </summary>
-    public static Dictionary<string, HashSet<Type>> CacheTags = [];
+    public Dictionary<string, HashSet<string>> CacheTags = [];
 
     /// <summary>
     /// Maps request types to response types.
     /// Key: request type (<see cref="Type"/>)
     /// Value: response type (<see cref="Type"/>)
     /// </summary>
-    public static Dictionary<Type, Type> RequestResponseTypes = [];
+    public Dictionary<Type, Type> RequestResponseTypes = [];
 
-    public static Type? GetResponseType<TRequest>()
+    public async Task<Type?> GetResponseTypeAsync<TRequest>(CancellationToken cancellationToken = default)
     {
         RequestResponseTypes.TryGetValue(typeof(TRequest), out var type);
         return type;
     }
 
-    public static Result UpdateContainer<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type responseType = null)
+    public async Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type responseType = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -54,7 +53,17 @@ public static class RequestOutputCacheContainer
         }
     }
 
-    private static Result AddOrUpdateCacheTag<TRequest>(IEnumerable<string>? tags = null)
+    public async Task<ReadOnlyDictionary<string, HashSet<string>>> GetCacheTagsAsync(CancellationToken cancellationToken = default)
+    {
+        return CacheTags.AsReadOnly();
+    }   
+
+    public async Task<ReadOnlyDictionary<string, HashSet<string?>>> GetCacheTypesAsync(CancellationToken cancellationToken = default)
+    {
+        return CacheTypes.AsReadOnly();
+    }
+
+    private Result AddOrUpdateCacheTag<TRequest>(IEnumerable<string>? tags = null)
     {
         try
         {
@@ -63,14 +72,14 @@ public static class RequestOutputCacheContainer
 
             foreach (var tag in tags)
             {
-                if (CacheTags.TryGetValue(tag, out HashSet<Type>? tagTypes))
+                if (CacheTags.TryGetValue(tag, out HashSet<string>? tagTypes))
                 {
                     tagTypes ??= [];
-                    tagTypes.Add(typeof(TRequest));
+                    tagTypes.Add(typeof(TRequest).FullName);
                 }
                 else
                 {
-                    tagTypes = [typeof(TRequest)];
+                    tagTypes = [typeof(TRequest).FullName];
                     CacheTags.TryAdd(tag, tagTypes);
                 }
             }
@@ -83,14 +92,14 @@ public static class RequestOutputCacheContainer
         }
     }
 
-    private static Result AddOrUpdateCacheType<TRequest>(string? cacheKey = null)
+    private Result AddOrUpdateCacheType<TRequest>(string? cacheKey = null)
     {
         try
         {
             if (cacheKey == null)
                 return Result.Ok();
 
-            if (CacheTypes.TryGetValue(typeof(TRequest), out HashSet<string?>? cacheTypes))
+            if (CacheTypes.TryGetValue(typeof(TRequest).FullName, out HashSet<string?>? cacheTypes))
             {
                 cacheTypes ??= [];
                 cacheTypes.Add(cacheKey);
@@ -98,7 +107,7 @@ public static class RequestOutputCacheContainer
             else
             {
                 cacheTypes = [cacheKey];
-                CacheTypes.TryAdd(typeof(TRequest), cacheTypes);
+                CacheTypes.TryAdd(typeof(TRequest).FullName, cacheTypes);
             }
 
             return Result.Ok();

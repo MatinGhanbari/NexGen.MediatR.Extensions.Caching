@@ -4,7 +4,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NexGen.MediatR.Extensions.Caching.Constants;
-using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Helpers;
 
@@ -20,6 +19,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
 {
     private readonly ILogger<GarnetRequestOutputCache<TRequest, TResponse>> _logger;
     private readonly IDistributedCache _cache;
+    private readonly IRequestOutputCacheContainer _cacheContainer;
 
     /// <summary>
     /// Initializes a new instance of <see cref="GarnetRequestOutputCache{TRequest, TResponse}"/>.
@@ -28,10 +28,12 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
     /// <param name="cache">The distributed cache used for storing responses.</param>
     public GarnetRequestOutputCache(
         ILogger<GarnetRequestOutputCache<TRequest, TResponse>> logger,
-        IDistributedCache cache)
+        IDistributedCache cache,
+        IRequestOutputCacheContainer cacheContainer)
     {
         _logger = logger;
         _cache = cache;
+        _cacheContainer = cacheContainer;
     }
 
     /// <inheritdoc />
@@ -47,7 +49,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
 
             _logger.LogInformation(ErrorMessages.CacheHit, typeof(TRequest).Name);
 
-            var type = RequestOutputCacheContainer.GetResponseType<TRequest>();
+            var type = await _cacheContainer.GetResponseTypeAsync<TRequest>(cancellationToken);
             return Result.Ok((TResponse)JsonConvert.DeserializeObject(response, type ?? typeof(TResponse))!);
         }
         catch (Exception exception)
@@ -68,10 +70,10 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
-            var containerResult = RequestOutputCacheContainer.UpdateContainer<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
-            if(containerResult.IsFailed)
+            var containerResult = await _cacheContainer.UpdateContainerAsync<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse), cancellationToken);
+            if (containerResult.IsFailed)
                 return Result.Fail(ErrorMessages.FailedToUpdateContainer);
-            
+
             await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(response), options, cancellationToken);
 
             return Result.Ok();
@@ -90,7 +92,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
         {
             foreach (var tag in tags)
             {
-                if (!RequestOutputCacheContainer.CacheTags.TryGetValue(tag, out HashSet<Type>? tagTypes))
+                if (!_cacheContainer.GetCacheTagsAsync(cancellationToken).Result.TryGetValue(tag, out HashSet<string>? tagTypes))
                     continue;
 
                 tagTypes ??= [];
@@ -112,11 +114,11 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
     /// <param name="tagTypes">The request types to evict.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A successful <see cref="Result"/> when eviction completes.</returns>
-    private async Task<Result> EvictTypesAsync(HashSet<Type> tagTypes, CancellationToken cancellationToken = default)
+    private async Task<Result> EvictTypesAsync(HashSet<string> tagTypes, CancellationToken cancellationToken = default)
     {
         foreach (var tagType in tagTypes)
         {
-            if (!RequestOutputCacheContainer.CacheTypes.TryGetValue(tagType, out HashSet<string>? cacheTypes))
+            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string>? cacheTypes))
                 continue;
 
             foreach (var cacheType in cacheTypes)
