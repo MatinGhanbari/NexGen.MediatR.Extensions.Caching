@@ -44,4 +44,18 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
         Services.AddScoped<IRequestOutputCacheInvalidator, RequestOutputCache<IRequest<object>, object>>();
         Services.AddSingleton<IRequestOutputCacheContainer, RequestOutputCacheContainer>();
     }
+
+    public void ClearCacheOnStartup()
+    {
+        if (RequestOutputCacheType == default)
+            throw new InvalidOperationException(ErrorMessages.CacheProviderNotConfigured);
+        
+        if (Services == null)
+            throw new ArgumentNullException(nameof(Services));
+
+        var scope = services.BuildServiceProvider().CreateScope();
+        var serviceProvider = scope.ServiceProvider;
+        var cacheInvalidator = serviceProvider.GetRequiredService<IRequestOutputCacheInvalidator>();
+        cacheInvalidator.FlushAll(CancellationToken.None);
+    }   
 }

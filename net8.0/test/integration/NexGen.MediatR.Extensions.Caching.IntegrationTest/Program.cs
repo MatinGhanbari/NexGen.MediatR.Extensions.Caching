@@ -31,6 +31,8 @@ builder.Services.AddMediatROutputCache(opt =>
     //opt.UseMemoryCache();
     opt.UseRedisCache(builder.Configuration.GetConnectionString("Redis")!);
     //opt.UseGarnetCache(builder.Configuration.GetConnectionString("Garnet")!);
+
+    opt.ClearCacheOnStartup();
 });
 
 var app = builder.Build();

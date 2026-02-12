@@ -9,6 +9,7 @@ public static class ErrorMessages
 {
     public const string ResponseNotFound = "Response not found.";
     public const string CacheHit = "Cache hit for MediatR request {RequestName}, Returning cached response.";
+    public const string CacheProviderNotConfigured = "Register cache provider before clear cache method.";
     public const string AlreadyConfigured = "The request output cache has already been configured.";
     public const string EmptyConnectionString = "The connection string cannot be empty.";
     public const string ContainerUpdatesFails = "Container Updates Fails.";
