@@ -108,6 +108,31 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
         }
     }
 
+    public async Task<Result> FlushAll(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var cacheTags = await _cacheContainer.GetCacheTagsAsync(cancellationToken);
+
+            var allTypes = cacheTags.Values
+                .Where(v => v != null)
+                .SelectMany(v => v!)
+                .ToHashSet();
+
+            if (!allTypes.Any())
+                return Result.Ok();
+
+            await EvictTypesAsync(allTypes, cancellationToken);
+
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, exception.Message);
+            return Result.Fail(exception.Message);
+        }
+    }
+
     /// <summary>
     /// Removes all cache entries for the specified request types.
     /// </summary>
