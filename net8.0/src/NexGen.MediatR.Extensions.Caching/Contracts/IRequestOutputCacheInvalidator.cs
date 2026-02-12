@@ -14,4 +14,11 @@ public interface IRequestOutputCacheInvalidator
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A <see cref="Result"/> indicating success or failure of the eviction.</returns>
     Task<Result> EvictByTagsAsync(IEnumerable<string> tags, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Clear all cached entries.
+    /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A <see cref="Result"/> indicating success or failure of the eviction.</returns>
+    Task<Result> FlushAll(CancellationToken cancellationToken = default);
 }

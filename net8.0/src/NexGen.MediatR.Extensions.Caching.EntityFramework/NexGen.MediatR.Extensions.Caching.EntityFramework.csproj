@@ -12,8 +12,8 @@
 		<AssemblyName>NexGen.MediatR.Extensions.Caching.EntityFramework</AssemblyName>
 		<Copyright>© 2025 MatinGhanbari</Copyright>
 
-		<Version>1.0.7</Version>
-		<PackageReleaseNotes>Release v1.0.7</PackageReleaseNotes>
+		<Version>1.0.8</Version>
+		<PackageReleaseNotes>Release v1.0.8</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

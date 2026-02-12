@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: nexgen-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass P@ssword
+    volumes:
+      - redis-data:/data
+    networks:
+      - nexgen-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: nexgen-sqlserver
+    restart: unless-stopped
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword
+      - MSSQL_PID=Express
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - nexgen-network
+
+networks:
+  nexgen-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  sqlserver-data:
