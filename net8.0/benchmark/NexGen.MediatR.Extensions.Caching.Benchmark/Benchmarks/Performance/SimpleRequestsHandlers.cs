@@ -22,7 +22,7 @@ namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance
         private async Task<string> DoTheJob(CancellationToken cancellationToken = default)
         {
             // Simulate the job
-            var delayTime = RandomNumberGenerator.GetInt32(200, 600);
+            var delayTime = Random.Shared.Next(200, 600);
             await Task.Delay(delayTime, cancellationToken);
 
             return _result;
