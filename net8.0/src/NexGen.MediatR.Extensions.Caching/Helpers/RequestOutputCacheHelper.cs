@@ -24,7 +24,7 @@ public static class RequestOutputCacheHelper
     /// <exception cref="ArgumentNullException">Thrown if the request is null.</exception>
     public static string GetCacheKey<TRequest>(TRequest request)
     {
-        if (request == null)
+        if (request is null)
             throw new ArgumentNullException(nameof(request));
 
         // Serialize the request to JSON
