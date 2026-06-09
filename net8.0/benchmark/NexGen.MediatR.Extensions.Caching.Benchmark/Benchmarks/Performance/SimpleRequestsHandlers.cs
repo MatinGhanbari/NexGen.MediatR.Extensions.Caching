@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using System.Security.Cryptography;
 
 namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance
 {
@@ -21,7 +22,9 @@ namespace NexGen.MediatR.Extensions.Caching.Benchmark.Benchmarks.Performance
         private async Task<string> DoTheJob(CancellationToken cancellationToken = default)
         {
             // Simulate the job
-            await Task.Delay(new Random().Next(200, 600), cancellationToken);
+            var delayTime = Random.Shared.Next(200, 600);
+            await Task.Delay(delayTime, cancellationToken);
+
             return _result;
         }
     }

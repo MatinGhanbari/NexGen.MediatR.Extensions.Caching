@@ -10,11 +10,6 @@ namespace NexGen.MediatR.Extensions.Caching.Helpers;
 public static class RequestOutputCacheHelper
 {
     /// <summary>
-    /// The SHA-256 hash instance.
-    /// </summary>
-    private static readonly SHA256 Sha256 = SHA256.Create(); 
-    
-    /// <summary>
     /// Generates a unique cache key for the specified request by serializing it
     /// and computing the SHA-256 hash.
     /// </summary>
@@ -24,23 +19,18 @@ public static class RequestOutputCacheHelper
     /// <exception cref="ArgumentNullException">Thrown if the request is null.</exception>
     public static string GetCacheKey<TRequest>(TRequest request)
     {
-        if (request == null)
+        if (request is null)
             throw new ArgumentNullException(nameof(request));
 
-        // Serialize the request to JSON
         var serialized = JsonConvert.SerializeObject(request);
-
-        // Compute SHA-256 hash of the serialized request
         var source = Encoding.UTF8.GetBytes(serialized);
-        var hashBytes = Sha256.ComputeHash(source);
+        var hashBytes = SHA256.HashData(source);
 
-        // Convert hash bytes to a lowercase hexadecimal string
         var hashString = BitConverter
             .ToString(hashBytes)
             .Replace("-", "")
             .ToLowerInvariant();
 
-        // Combine request type name with hash to create the cache key
         return $"{typeof(TRequest).Name}:{hashString}";
     }
 }
