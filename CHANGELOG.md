@@ -11,7 +11,11 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ### Added
 
-- (none yet)
+- Provider-specific configuration overloads for cache registration:
+  - `UseMemoryCache(Action<MemoryRequestOutputCacheOptions>)`
+  - `UseRedisCache(Action<RedisRequestOutputCacheOptions>)` / `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`
+  - Optional `InstanceName`, `Database`, `ConfigurationOptions`, and `DefaultExpirationInSeconds`
+  - Existing string / parameterless overloads unchanged (delegate to the new APIs)
 
 ### Changed
 
