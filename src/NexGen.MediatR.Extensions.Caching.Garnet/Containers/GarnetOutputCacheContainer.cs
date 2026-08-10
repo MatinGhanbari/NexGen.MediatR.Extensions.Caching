@@ -27,7 +27,7 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
         return requestResponseTypes.GetValueOrDefault(typeof(TRequest));
     }
 
-    public async Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type responseType = null, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type? responseType = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -37,10 +37,13 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
             if (!updateCacheTag.IsSuccess || !updateCacheType.IsSuccess)
                 return Result.Fail(ErrorMessages.ContainerUpdatesFails);
 
-            var response = await _cache.GetStringAsync(CacheKeys.RequestResponseTypesKey, cancellationToken);
-            var requestResponseTypes = response == null ? [] : (Dictionary<Type, Type>)JsonConvert.DeserializeObject(response, typeof(Dictionary<Type, Type>))!;
-            requestResponseTypes.TryAdd(typeof(TRequest), responseType);
-            await _cache.SetStringAsync(CacheKeys.RequestResponseTypesKey, JsonConvert.SerializeObject(requestResponseTypes), cancellationToken);
+            if (responseType is not null)
+            {
+                var response = await _cache.GetStringAsync(CacheKeys.RequestResponseTypesKey, cancellationToken);
+                var requestResponseTypes = response == null ? [] : (Dictionary<Type, Type>)JsonConvert.DeserializeObject(response, typeof(Dictionary<Type, Type>))!;
+                requestResponseTypes.TryAdd(typeof(TRequest), responseType);
+                await _cache.SetStringAsync(CacheKeys.RequestResponseTypesKey, JsonConvert.SerializeObject(requestResponseTypes), cancellationToken);
+            }
 
             return Result.Ok();
         }
@@ -75,16 +78,18 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
             if (tags == null)
                 return Result.Ok();
 
+            var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
+
             foreach (var tag in tags)
             {
                 if (GetCacheTagsAsync(cancellationToken).Result.TryGetValue(tag, out HashSet<string>? tagTypes))
                 {
                     tagTypes ??= [];
-                    tagTypes.Add(typeof(TRequest).FullName);
+                    tagTypes.Add(requestTypeName);
                 }
                 else
                 {
-                    tagTypes = [typeof(TRequest).FullName];
+                    tagTypes = [requestTypeName];
 
                     var response = await _cache.GetStringAsync(CacheKeys.CacheTagsKey, cancellationToken);
                     var cacheTags = response == null ? [] : (Dictionary<string, HashSet<string>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string>>))!;
@@ -109,7 +114,9 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
             if (cacheKey == null)
                 return Result.Ok();
 
-            if (GetCacheTypesAsync(cancellationToken).Result.TryGetValue(typeof(TRequest).FullName, out HashSet<string?>? types))
+            var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
+
+            if (GetCacheTypesAsync(cancellationToken).Result.TryGetValue(requestTypeName, out HashSet<string?>? types))
             {
                 types ??= [];
                 types.Add(cacheKey);
@@ -119,8 +126,8 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
                 types = [cacheKey];
 
                 var response = await _cache.GetStringAsync(CacheKeys.CacheTypesKey, cancellationToken);
-                var cacheTypes = response == null ? new Dictionary<string, HashSet<string>>() : (Dictionary<string, HashSet<string?>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string?>>))!;
-                cacheTypes.TryAdd(typeof(TRequest).FullName, types);
+                var cacheTypes = response == null ? new Dictionary<string, HashSet<string?>>() : (Dictionary<string, HashSet<string?>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string?>>))!;
+                cacheTypes.TryAdd(requestTypeName, types);
 
                 await _cache.SetStringAsync(CacheKeys.CacheTypesKey, JsonConvert.SerializeObject(cacheTypes), cancellationToken);
             }

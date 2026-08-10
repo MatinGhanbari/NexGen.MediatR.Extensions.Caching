@@ -26,6 +26,7 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
     /// </summary>
     /// <param name="logger">The logger used to log cache hits and errors.</param>
     /// <param name="cache">The distributed cache used for storing responses.</param>
+    /// <param name="cacheContainer">The cache container used for tag and type indexing.</param>
     public GarnetRequestOutputCache(
         ILogger<GarnetRequestOutputCache<TRequest, TResponse>> logger,
         IDistributedCache cache,
@@ -143,12 +144,13 @@ public sealed class GarnetRequestOutputCache<TRequest, TResponse>
     {
         foreach (var tagType in tagTypes)
         {
-            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string>? cacheTypes))
+            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string?>? cacheTypes) || cacheTypes is null)
                 continue;
 
             foreach (var cacheType in cacheTypes)
             {
-                await _cache.RemoveAsync(cacheType, cancellationToken);
+                if (cacheType is not null)
+                    await _cache.RemoveAsync(cacheType, cancellationToken);
             }
         }
 

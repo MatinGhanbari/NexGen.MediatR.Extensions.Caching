@@ -11,12 +11,21 @@ namespace NexGen.MediatR.Extensions.Caching.Configurations;
 /// Provides configuration options for MediatR request output caching.
 /// Allows selecting the caching mechanism and registering required services.
 /// </summary>
-public class RequestOutputCacheConfigurationOption(IServiceCollection services)
+public class RequestOutputCacheConfigurationOption
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RequestOutputCacheConfigurationOption"/> class.
+    /// </summary>
+    /// <param name="services">The service collection to which caching services will be added.</param>
+    public RequestOutputCacheConfigurationOption(IServiceCollection services)
+    {
+        Services = services ?? throw new ArgumentNullException(nameof(services));
+    }
+
     /// <summary>
     /// The service collection to which caching services will be added.
     /// </summary>
-    public readonly IServiceCollection Services = services;
+    public IServiceCollection Services { get; }
 
     /// <summary>
     /// The selected cache type.
@@ -34,9 +43,6 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
         if (RequestOutputCacheType != default)
             throw new InvalidOperationException(ErrorMessages.AlreadyConfigured);
 
-        if (Services == null)
-            throw new ArgumentNullException(nameof(Services));
-
         RequestOutputCacheType = RequestOutputCacheType.MemoryCache;
 
         Services.AddMemoryCache();
@@ -45,17 +51,16 @@ public class RequestOutputCacheConfigurationOption(IServiceCollection services)
         Services.AddSingleton<IRequestOutputCacheContainer, RequestOutputCacheContainer>();
     }
 
+    /// <summary>
+    /// Clears all cached entries during application startup.
+    /// </summary>
     public void ClearCacheOnStartup()
     {
         if (RequestOutputCacheType == default)
             throw new InvalidOperationException(ErrorMessages.CacheProviderNotConfigured);
-        
-        if (Services == null)
-            throw new ArgumentNullException(nameof(Services));
 
-        var scope = services.BuildServiceProvider().CreateScope();
-        var serviceProvider = scope.ServiceProvider;
-        var cacheInvalidator = serviceProvider.GetRequiredService<IRequestOutputCacheInvalidator>();
-        cacheInvalidator.FlushAll(CancellationToken.None);
-    }   
+        using var scope = Services.BuildServiceProvider().CreateScope();
+        var cacheInvalidator = scope.ServiceProvider.GetRequiredService<IRequestOutputCacheInvalidator>();
+        cacheInvalidator.FlushAll(CancellationToken.None).GetAwaiter().GetResult();
+    }
 }

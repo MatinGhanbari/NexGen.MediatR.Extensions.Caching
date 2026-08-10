@@ -34,7 +34,7 @@ public class RequestOutputCacheContainer : IRequestOutputCacheContainer
         return type;
     }
 
-    public async Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type responseType = null, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type? responseType = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -44,7 +44,9 @@ public class RequestOutputCacheContainer : IRequestOutputCacheContainer
             if (!updateCacheTag.IsSuccess || !updateCacheType.IsSuccess)
                 return Result.Fail(ErrorMessages.ContainerUpdatesFails);
 
-            RequestResponseTypes.TryAdd(typeof(TRequest), responseType);
+            if (responseType is not null)
+                RequestResponseTypes.TryAdd(typeof(TRequest), responseType);
+
             return Result.Ok();
         }
         catch (Exception exception)
@@ -70,16 +72,18 @@ public class RequestOutputCacheContainer : IRequestOutputCacheContainer
             if (tags == null)
                 return Result.Ok();
 
+            var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
+
             foreach (var tag in tags)
             {
                 if (CacheTags.TryGetValue(tag, out HashSet<string>? tagTypes))
                 {
                     tagTypes ??= [];
-                    tagTypes.Add(typeof(TRequest).FullName);
+                    tagTypes.Add(requestTypeName);
                 }
                 else
                 {
-                    tagTypes = [typeof(TRequest).FullName];
+                    tagTypes = [requestTypeName];
                     CacheTags.TryAdd(tag, tagTypes);
                 }
             }
@@ -99,7 +103,9 @@ public class RequestOutputCacheContainer : IRequestOutputCacheContainer
             if (cacheKey == null)
                 return Result.Ok();
 
-            if (CacheTypes.TryGetValue(typeof(TRequest).FullName, out HashSet<string?>? cacheTypes))
+            var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
+
+            if (CacheTypes.TryGetValue(requestTypeName, out HashSet<string?>? cacheTypes))
             {
                 cacheTypes ??= [];
                 cacheTypes.Add(cacheKey);
@@ -107,7 +113,7 @@ public class RequestOutputCacheContainer : IRequestOutputCacheContainer
             else
             {
                 cacheTypes = [cacheKey];
-                CacheTypes.TryAdd(typeof(TRequest).FullName, cacheTypes);
+                CacheTypes.TryAdd(requestTypeName, cacheTypes);
             }
 
             return Result.Ok();

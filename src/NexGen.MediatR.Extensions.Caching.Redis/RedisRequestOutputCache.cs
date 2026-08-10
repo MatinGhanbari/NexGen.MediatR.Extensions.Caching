@@ -144,12 +144,13 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
     {
         foreach (var tagType in tagTypes)
         {
-            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string>? cacheTypes))
+            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string?>? cacheTypes) || cacheTypes is null)
                 continue;
 
             foreach (var cacheType in cacheTypes)
             {
-                await _cache.RemoveAsync(cacheType, cancellationToken);
+                if (cacheType is not null)
+                    await _cache.RemoveAsync(cacheType, cancellationToken);
             }
         }
 

@@ -1,0 +1,59 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** are released in **lockstep**.
+
+## [Unreleased]
+
+### Added
+
+- (none yet)
+
+### Changed
+
+- (none yet)
+
+### Fixed
+
+- (none yet)
+
+### Removed
+
+- (none yet)
+
+## [1.1.0] - 2026-08-10
+
+### Added
+
+- Multi-targeting for **net8.0**, **net9.0**, and **net10.0** so apps on .NET 8–10 can consume the same package set.
+- Central Package Management (`Directory.Packages.props`) and shared library metadata (`src/Directory.Build.props`).
+- TFM-aligned Microsoft.Extensions / ASP.NET / EF Core package versions via `Directory.Build.targets`.
+- SourceLink, deterministic builds, and symbol packages (`.snupkg`).
+- Repository analyzers (NetAnalyzers, Meziantou.Analyzer) and `.editorconfig`.
+- `global.json` SDK pin with roll-forward.
+- Standard consumer docs: expanded [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md), and this changelog.
+
+### Changed
+
+- Repository layout to `src/`, `tests/`, and `benchmarks/` (removed the `net8.0/` folder).
+- CI builds against .NET 8, 9, and 10 and packs all libraries.
+- Nullable annotations and small configuration hardening (`RequestOutputCacheConfigurationOption`, container APIs).
+
+## [1.0.8] - 2025
+
+### Added
+
+- Core MediatR output caching with `[RequestOutputCache]` and pipeline behavior.
+- In-memory, Redis, and Garnet providers.
+- Tag-based eviction (`EvictByTagsAsync`) and `FlushAll`.
+- Entity Framework Core ChangeTracker auto-evict (`UseMediatROutputCacheAutoEvict`).
+- `ClearCacheOnStartup` configuration option.
+- Integration sample and BenchmarkDotNet project.
+
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.1.0
+[1.0.8]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.0.8

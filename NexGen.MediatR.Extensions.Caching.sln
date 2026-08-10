@@ -3,31 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36408.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net8.0", "net8.0", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{396DFD78-E35D-453B-AFB5-F84EAA1E1A7B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmark", "benchmark", "{0F5F74DA-75ED-424D-8849-08C1565AF0BC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{0F5F74DA-75ED-424D-8849-08C1565AF0BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching", "net8.0\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj", "{ACB0ABAC-7D5E-476E-AAF0-276765782E2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching", "src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj", "{ACB0ABAC-7D5E-476E-AAF0-276765782E2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Redis", "net8.0\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj", "{B38B3CAE-A3E2-4645-88AD-6BF779924BD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Redis", "src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj", "{B38B3CAE-A3E2-4645-88AD-6BF779924BD5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit", "unit", "{B194F339-3081-4C47-BBD6-A22A81BCE3C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.IntegrationTest", "tests\NexGen.MediatR.Extensions.Caching.IntegrationTest\NexGen.MediatR.Extensions.Caching.IntegrationTest.csproj", "{2EE00D7E-422E-41D9-A7BC-E86985A97BDB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{4FBE1707-ABF8-4F5E-94E6-21D859BFBB07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Benchmark", "benchmarks\NexGen.MediatR.Extensions.Caching.Benchmark\NexGen.MediatR.Extensions.Caching.Benchmark.csproj", "{0AF5FDE9-A8DF-4D1B-BF9D-DBDD148A380B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.IntegrationTest", "net8.0\test\integration\NexGen.MediatR.Extensions.Caching.IntegrationTest\NexGen.MediatR.Extensions.Caching.IntegrationTest.csproj", "{2EE00D7E-422E-41D9-A7BC-E86985A97BDB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.UnitTest", "tests\NexGen.MediatR.Extensions.Caching.UnitTest\NexGen.MediatR.Extensions.Caching.UnitTest.csproj", "{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Benchmark", "net8.0\benchmark\NexGen.MediatR.Extensions.Caching.Benchmark\NexGen.MediatR.Extensions.Caching.Benchmark.csproj", "{0AF5FDE9-A8DF-4D1B-BF9D-DBDD148A380B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Garnet", "src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj", "{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.UnitTest", "net8.0\test\unit\NexGen.MediatR.Extensions.Caching.UnitTest\NexGen.MediatR.Extensions.Caching.UnitTest.csproj", "{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.Garnet", "net8.0\src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj", "{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.EntityFramework", "net8.0\src\NexGen.MediatR.Extensions.Caching.EntityFramework\NexGen.MediatR.Extensions.Caching.EntityFramework.csproj", "{F7F4BA59-5660-4ADF-BC0F-F9692267C6D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexGen.MediatR.Extensions.Caching.EntityFramework", "src\NexGen.MediatR.Extensions.Caching.EntityFramework\NexGen.MediatR.Extensions.Caching.EntityFramework.csproj", "{F7F4BA59-5660-4ADF-BC0F-F9692267C6D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,18 +62,13 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{396DFD78-E35D-453B-AFB5-F84EAA1E1A7B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{0F5F74DA-75ED-424D-8849-08C1565AF0BC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{ACB0ABAC-7D5E-476E-AAF0-276765782E2A} = {396DFD78-E35D-453B-AFB5-F84EAA1E1A7B}
 		{B38B3CAE-A3E2-4645-88AD-6BF779924BD5} = {396DFD78-E35D-453B-AFB5-F84EAA1E1A7B}
-		{B194F339-3081-4C47-BBD6-A22A81BCE3C8} = {A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0}
-		{4FBE1707-ABF8-4F5E-94E6-21D859BFBB07} = {A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0}
-		{2EE00D7E-422E-41D9-A7BC-E86985A97BDB} = {4FBE1707-ABF8-4F5E-94E6-21D859BFBB07}
-		{0AF5FDE9-A8DF-4D1B-BF9D-DBDD148A380B} = {0F5F74DA-75ED-424D-8849-08C1565AF0BC}
-		{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8} = {B194F339-3081-4C47-BBD6-A22A81BCE3C8}
 		{5B392A1C-CEE3-4D9A-A1AD-35BCFEB77D93} = {396DFD78-E35D-453B-AFB5-F84EAA1E1A7B}
 		{F7F4BA59-5660-4ADF-BC0F-F9692267C6D1} = {396DFD78-E35D-453B-AFB5-F84EAA1E1A7B}
+		{2EE00D7E-422E-41D9-A7BC-E86985A97BDB} = {A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0}
+		{75B6214A-EB95-4DD1-8ACB-8AC651B3E2E8} = {A650BC74-81AD-4126-AD4D-3C4EAF7AC4C0}
+		{0AF5FDE9-A8DF-4D1B-BF9D-DBDD148A380B} = {0F5F74DA-75ED-424D-8849-08C1565AF0BC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F073212E-6245-47F1-8755-4D8500805236}

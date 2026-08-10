@@ -1,256 +1,352 @@
-# ⚡ NexGen.MediatR.Extensions.Caching
+# NexGen.MediatR.Extensions.Caching
 
-![CI](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png" alt="NexGen.MediatR.Extensions.Caching" width="280" />
+</p>
 
-A lightweight and flexible library that extends [MediatR](https://github.com/jbogard/MediatR) to provide seamless caching and cache invalidation for requests using pipeline behaviors in .NET applications.  
-This library integrates caching as a cross-cutting concern, enabling developers to cache query results 🚀 and invalidate caches efficiently within the MediatR pipeline, improving application performance and scalability.
+<p align="center">
+  <strong>MediatR output caching</strong> with pipeline behaviors, tag-based invalidation, and optional Entity Framework auto-eviction.
+</p>
 
-[![CI](https://img.shields.io/github/actions/workflow/status/MatinGhanbari/NexGen.MediatR.Extensions.Caching/.github%2Fworkflows%2Fci.yml?style=for-the-badge)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml)
-[![NuGet](https://img.shields.io/nuget/vpre/NexGen.MediatR.Extensions.Caching.svg?style=for-the-badge)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
-[![NuGet](https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching?style=for-the-badge)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
+<p align="center">
+  <a href="https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/MatinGhanbari/NexGen.MediatR.Extensions.Caching/.github%2Fworkflows%2Fci.yml?style=flat-square&label=CI" alt="CI" /></a>
+  <a href="https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching"><img src="https://img.shields.io/nuget/v/NexGen.MediatR.Extensions.Caching.svg?style=flat-square" alt="NuGet" /></a>
+  <a href="https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching"><img src="https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching?style=flat-square" alt="Downloads" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License" /></a>
+  <img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=flat-square" alt=".NET 8 | 9 | 10" />
+</p>
 
-## 📑 Table of Contents
+---
 
-- [Features](#-features)
-- [Installation](#-installation)
-- [Configuration](#%EF%B8%8F-configuration)
-  - [Configure MediatR and Caching Services](#step-1-configure-mediatr-and-caching-services)
-  - [Using Caching Services](#step-2-using-caching-services)
-  - [Invalidate Cached Responses](#step-3-invalidate-cached-responses)
-- [Examples](#-examples)
-- [Contributing](#-contributing)
-- [License](#-license)
+## Table of contents
 
-## ✨ Features
+- [About](#about)
+- [Features](#features)
+- [Packages](#packages)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+  - [In-memory cache](#in-memory-cache)
+  - [Redis](#redis)
+  - [Garnet](#garnet)
+  - [Entity Framework auto-evict](#entity-framework-auto-evict)
+  - [Clear cache on startup](#clear-cache-on-startup)
+- [Caching requests](#caching-requests)
+- [Invalidation](#invalidation)
+- [How it works](#how-it-works)
+- [Examples](#examples)
+- [Samples and benchmarks](#samples-and-benchmarks)
+- [Changelog](#changelog)
+- [Contributing](#contributing)
+- [License](#license)
 
-- **Seamless Integration**: Adds caching to MediatR requests using pipeline behaviors.
-- **Flexible Cache Storage**: Supports both in-memory (`IMemoryCache`) 💾 and distributed caching (`IDistributedCache`) 🌐.
-- **Automatic Cache Invalidation**: Invalidate cached requests based on other requests or EntityFramework ChangeTracker.
-- **Customizable Cache Options**: Configure expiration ⏳, sliding expiration, and cache keys per request.
-- **ASP.NET Core Compatibility**: Works with ASP.NET Core’s DI and caching infrastructure.
-- **Extensible Design**: Easily extend or customize caching behavior to suit your needs.
-- **Server Sync**: This library use sync data with server for using in microservice applications.
+---
 
-## 📦 Installation
+## About
 
-You can install `NexGen.MediatR.Extensions.Caching` via NuGet Package Manager or the .NET CLI.
+`NexGen.MediatR.Extensions.Caching` extends [MediatR](https://github.com/jbogard/MediatR) with **opt-in response caching** as a cross-cutting concern. Mark a request with `[RequestOutputCache]`, and a pipeline behavior serves cached responses on hits and stores results on misses.
 
-### Using NuGet Package Manager
+Invalidation is **tag-based**: associate tags with cached requests, then evict by tag manually or automatically when Entity Framework Core saves related entity changes. Providers include in-memory, Redis, and Garnet so the same API works for single-node and distributed / microservice scenarios.
 
-```bash
-Install-Package NexGen.MediatR.Extensions.Caching
-```
+---
 
-### Using .NET CLI
+## Features
+
+| Feature | Description |
+|--------|-------------|
+| **Opt-in attribute caching** | Only requests decorated with `[RequestOutputCache]` are cached; unmarked requests pass through unchanged. |
+| **MediatR pipeline behavior** | Transparent get / miss / set flow via `RequestOutputCacheBehavior<,>` — no changes inside handlers for cache hits. |
+| **Multi-target frameworks** | Ships `net8.0`, `net9.0`, and `net10.0` in one NuGet package set. |
+| **In-memory provider** | Built into the core package using `IMemoryCache` for local and development scenarios. |
+| **Redis provider** | Distributed cache via `IDistributedCache` + StackExchange.Redis (`NexGen.MediatR.Extensions.Caching.Redis`). |
+| **Garnet provider** | Distributed Garnet-compatible provider mirrored with Redis (`NexGen.MediatR.Extensions.Caching.Garnet`). |
+| **Tag-based invalidation** | Group related cache entries with tags and evict with `EvictByTagsAsync`. |
+| **EF Core auto-evict** | On `SaveChanges`, evict tags matching changed entity type **names** (`UseMediatROutputCacheAutoEvict`). |
+| **Deterministic cache keys** | Key = `{RequestTypeName}:{SHA-256(JSON)}` from the serialized request payload. |
+| **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. |
+| **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
+| **Clear on startup** | Optional `ClearCacheOnStartup()` during DI configuration. |
+| **FluentResults** | Cache get/set/evict APIs return `Result` / `Result<T>` for success and failure paths. |
+| **ASP.NET Core DI** | Integrates with `IServiceCollection` and standard Microsoft.Extensions.Caching abstractions. |
+| **Enterprise packaging** | Central Package Management, SourceLink, symbol packages (`.snupkg`), XML docs on public APIs. |
+
+---
+
+## Packages
+
+| Package | Role |
+|---------|------|
+| [`NexGen.MediatR.Extensions.Caching`](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching) | Core: attribute, behavior, contracts, in-memory provider |
+| [`NexGen.MediatR.Extensions.Caching.Redis`](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.Redis) | Redis distributed provider |
+| [`NexGen.MediatR.Extensions.Caching.Garnet`](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.Garnet) | Garnet distributed provider |
+| [`NexGen.MediatR.Extensions.Caching.EntityFramework`](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.EntityFramework) | EF Core ChangeTracker auto-eviction |
+
+All four packages share the same version (lockstep releases).
+
+---
+
+## Requirements
+
+- **.NET 8**, **.NET 9**, or **.NET 10**
+- [MediatR](https://www.nuget.org/packages/MediatR) (registered in your app as usual)
+- Optional: Redis/Garnet for distributed cache; EF Core for auto-evict
+
+---
+
+## Installation
+
+### Core
 
 ```bash
 dotnet add package NexGen.MediatR.Extensions.Caching
 ```
 
-## ⚙️ Configuration
+### Providers (as needed)
 
-### Step 1: Configure MediatR and Caching Services
-
-In your `Startup.cs` or `Program.cs`, register MediatR and caching:
-
-- Using `MemoryCache`
-
-  ```csharp
-  builder.Services.AddMediatROutputCache(opt =>
-  {
-      opt.UseMemoryCache();
-  });
-  ```
-
-- Using `Redis` (`NexGen.MediatR.Extensions.Caching.Redis`)
-
-  Installation:
-  ```bash
-  dotnet add package NexGen.MediatR.Extensions.Caching.Redis
-  ```
-
-  Configuration:
-  ```csharp
-  builder.Services.AddMediatROutputCache(opt =>
-  {
-      var redisConnectionString = "localhost:6379,password=YourRedisPassword";
-      opt.UseRedisCache(redisConnectionString);
-  });
-  ```
-
-- Using `Garnet` (`NexGen.MediatR.Extensions.Caching.Garnet`)
-
-  Installation:
-  ```bash
-  dotnet add package NexGen.MediatR.Extensions.Caching.Garnet
-  ```
-
-  Configuration:
-  ```csharp
-  builder.Services.AddMediatROutputCache(opt =>
-  {
-      var garnetConnectionString = "localhost:6379,password=YourGarnetPassword";
-      opt.UseGarnetCache(garnetConnectionString);
-  });
-  ```
-
-- Using `EntityFramework Auto Evict` (`NexGen.MediatR.Extensions.Caching.EntityFramework`)
-
-  Installation:
-  ```bash
-  dotnet add package NexGen.MediatR.Extensions.Caching.EntityFramework
-  ```
-
-  Configuration:
-  ```csharp
-  builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
-  {
-    // Other dbcontext settings
-    ...
-
-    // Use this method to set auto evict based on EF change tracker
-    optionsBuilder.UseMediatROutputCacheAutoEvict(sp);
-  });
-  ```
-
-### Step 2: Using Caching Services
-
-Add `RequestOutputCache` attribute to your `IRequest` class:
-> [!Note]
-> The request class must implement `IRequest<TResponse>` where TResponse is class, record or interface (the mediator request format)!
-
-> [!Important]
-> If you want to use EntityFramework ChangeTracker auto evict to invalidate the cache based on database dbset changes,
-> Provide nameof all db entities that are related to the response. e.g. `tags: [nameof(UserDbEntity), nameof(OrderDbEntity)]`
-
-```csharp
-[RequestOutputCache(tags: ["weather", nameof(WeatherForecastDbEntity)], expirationInSeconds: 3600)]
-public class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
-{
-    public int Limit { get; set; } = 10;
-    public int Offset { get; set; } = 0;
-}
+```bash
+dotnet add package NexGen.MediatR.Extensions.Caching.Redis
+dotnet add package NexGen.MediatR.Extensions.Caching.Garnet
+dotnet add package NexGen.MediatR.Extensions.Caching.EntityFramework
 ```
 
-### Step 3: Invalidate Cached Responses
+Or via Package Manager Console:
 
-Invalidate cached responses by tags:
-
-```csharp
-public class TestClass
-{
-    private readonly IRequestOutputCache<WeatherForecastEvictRequest, string> _cache;
-
-    public TestClass(IRequestOutputCache<WeatherForecastEvictRequest, string> cache)
-    {
-        _cache = cache;
-    }
-
-    public async Task EvictWeatherResponses()
-    {
-        List<string> tags = [ "weather" ];
-        await _cache.EvictByTagsAsync(tags);
-    }
-}
+```powershell
+Install-Package NexGen.MediatR.Extensions.Caching
 ```
 
-> [!Note]
-> If you configure EntityFramework to detect change of cached items, you dont need to evict records by yourself.  
+---
 
-## 💡 Examples
+## Quick start
 
-### Example 1: Caching a List of Items
+```csharp
+// Program.cs
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-Suppose you have a query to fetch a list of Weather Forecasts:
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache();
+});
+```
 
 ```csharp
 [RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
-public class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
+public sealed class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
+{
+    public int Limit { get; set; } = 10;
+}
+```
+
+Send the request through MediatR as usual; the first call executes the handler and caches the response. Later identical requests (same type + payload) are served from cache until expiration or eviction.
+
+---
+
+## Configuration
+
+Register **one** cache provider via `AddMediatROutputCache`. Configuring more than one throws.
+
+### In-memory cache
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache();
+});
+```
+
+### Redis
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseRedisCache("localhost:6379,password=YourRedisPassword");
+});
+```
+
+### Garnet
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseGarnetCache("localhost:6379,password=YourGarnetPassword");
+});
+```
+
+### Entity Framework auto-evict
+
+After a successful `SaveChanges` / `SaveChangesAsync`, the interceptor collects distinct entity CLR type **names** and calls `EvictByTagsAsync` with those names. Request tags must match (typically `nameof(YourEntity)`).
+
+```csharp
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+{
+    options.UseSqlServer(connectionString);
+    options.UseMediatROutputCacheAutoEvict(sp);
+});
+```
+
+### Clear cache on startup
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache();
+    opt.ClearCacheOnStartup();
+});
+```
+
+---
+
+## Caching requests
+
+Apply `[RequestOutputCache]` on the **request** type (the class that implements `IRequest<TResponse>`).
+
+> **Note:** `TResponse` should be a reference type (class, record, or interface), consistent with typical MediatR query responses.
+
+> **Important:** For EF auto-evict, include `nameof` for every related entity type in `tags`.
+
+```csharp
+[RequestOutputCache(
+    tags: ["weather", nameof(WeatherForecastDbEntity)],
+    expirationInSeconds: 3600)]
+public sealed class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
 {
     public int Limit { get; set; } = 10;
     public int Offset { get; set; } = 0;
 }
+```
 
-public class WeatherForecastRequestHandler : IRequestHandler<WeatherForecastRequest, IEnumerable<WeatherForecastDto>>
+| Attribute parameter | Behavior |
+|---------------------|----------|
+| `tags` | Labels for grouping and invalidation |
+| `expirationInSeconds` | Absolute lifetime in seconds. Default: **300**. Use **`0`** for no absolute expiration |
+
+---
+
+## Invalidation
+
+### Manual (by tags)
+
+Inject `IRequestOutputCacheInvalidator` or `IRequestOutputCache<TRequest, TResponse>`:
+
+```csharp
+public sealed class WeatherForecastUpdateHandler(
+    IRequestOutputCacheInvalidator cache)
+    : IRequestHandler<WeatherForecastUpdateRequest, string>
 {
-    private static readonly string[] Summaries = new[]
+    public async Task<string> Handle(
+        WeatherForecastUpdateRequest request,
+        CancellationToken cancellationToken)
     {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
-    public async Task<IEnumerable<WeatherForecastDto>> Handle(WeatherForecastRequest request, CancellationToken cancellationToken)
-    {
-        await Task.Delay(2000, cancellationToken);
-        return Enumerable.Range(1, request.Limit).Select(index => new WeatherForecastDto
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        }).ToArray();
+        await cache.EvictByTagsAsync(["weather"], cancellationToken);
+        return "Evicted";
     }
 }
 ```
 
-The response will be cached with the key `"weather"` for 5 minutes.
-
-> [!IMPORTANT]  
-> If `expirationInSeconds` is not provided, it uses the **default value**. To make the response never expire, set `expirationInSeconds` to **Zero**.
-
-### Example 2: Invalidation on Update
-
-When a response must be updated, invalidate the product list cache:
+### Flush everything
 
 ```csharp
-public class WeatherForecastUpdateRequest : IRequest<string>
+await cache.FlushAll(cancellationToken);
+```
+
+### Automatic (EF Core)
+
+When `UseMediatROutputCacheAutoEvict` is configured, you usually do not need manual eviction for data that changes through that `DbContext`.
+
+---
+
+## How it works
+
+```text
+[RequestOutputCache]  →  RequestOutputCacheBehavior
+                              │
+                              ├─ hit  → return cached TResponse
+                              └─ miss → handler → store → return TResponse
+
+Key:   {RequestType.Name}:{sha256(json(request))}
+Index: tag → request types → cache keys  (via IRequestOutputCacheContainer)
+Evict: EvictByTagsAsync(tags)  or  EF ChangeTracker → entity type Name as tags
+```
+
+Distributed providers (Redis / Garnet) also keep request→response type metadata so payloads can be deserialized correctly across nodes.
+
+---
+
+## Examples
+
+### Cache a query
+
+```csharp
+[RequestOutputCache(tags: ["weather"], expirationInSeconds: 300)]
+public sealed class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecastDto>>
 {
+    public int Limit { get; set; } = 10;
 }
 
-public class WeatherForecastUpdateRequestHandler : IRequestHandler<WeatherForecastUpdateRequest, string>
+public sealed class WeatherForecastRequestHandler
+    : IRequestHandler<WeatherForecastRequest, IEnumerable<WeatherForecastDto>>
 {
-    private readonly IRequestOutputCache<WeatherForecastUpdateRequest, string> _cache;
-
-    public WeatherForecastUpdateRequestHandler(IRequestOutputCache<WeatherForecastUpdateRequest, string> cache)
+    public async Task<IEnumerable<WeatherForecastDto>> Handle(
+        WeatherForecastRequest request,
+        CancellationToken cancellationToken)
     {
-        _cache = cache;
+        await Task.Delay(2000, cancellationToken); // simulate work
+        // ... build and return forecast list
+        return [];
     }
+}
+```
 
-    public async Task<string> Handle(WeatherForecastUpdateRequest request, CancellationToken cancellationToken)
+### Invalidate after an update
+
+```csharp
+public sealed class WeatherForecastUpdateRequest : IRequest<string>;
+
+public sealed class WeatherForecastUpdateRequestHandler(
+    IRequestOutputCacheInvalidator cache)
+    : IRequestHandler<WeatherForecastUpdateRequest, string>
+{
+    public async Task<string> Handle(
+        WeatherForecastUpdateRequest request,
+        CancellationToken cancellationToken)
     {
-        var tags = new List<string> { nameof(WeatherForecastDto) };
-        await _cache.EvictByTagsAsync(tags, cancellationToken);
-
+        await cache.EvictByTagsAsync(["weather"], cancellationToken);
         return "Evicted!";
     }
 }
 ```
 
-> [!NOTE]
-> See **IntegrationTests** in `net8.0/test` folder for more working examples.
+---
 
-## 📈 Benchmarks
+## Samples and benchmarks
+
+| Area | Location |
+|------|----------|
+| Integration / consumer sample | [`tests/NexGen.MediatR.Extensions.Caching.IntegrationTest`](tests/NexGen.MediatR.Extensions.Caching.IntegrationTest) (includes `docker-compose.yml` for Redis/SQL) |
+| Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
+| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) |
 
 ![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
 
-> [!NOTE]
-> This benchmark is available in benchmark directory (`NexGen.MediatR.Extensions.Caching.Benchmark`).
+> Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads.
 
-> [!TIP]
-> This is benchmark results of testing same simple request with and without caching using `NexGen.MediatR.Extensions.Caching` package.
-> The bigger and complicated responses may use more allocated memory in memory cache solution.
-> Better to use distributed cache services like `Redis` in enterprise projects.
+---
 
-## 🤝 Contributing
+## Changelog
 
-Contributions are welcome! To contribute to `NexGen.MediatR.Extensions.Caching`:
+Release notes are maintained in **[CHANGELOG.md](CHANGELOG.md)** (Keep a Changelog format). Check that file for what changed in each version.
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/your-feature`).
-3. Make your changes and commit them (`git commit -m "Add your feature"`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
+---
 
-Please ensure your code follows the project's coding standards and includes unit tests where applicable.
+## Contributing
 
-## 📃 License
+Contributions are welcome through **GitHub Issues** and **Pull Requests**.
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

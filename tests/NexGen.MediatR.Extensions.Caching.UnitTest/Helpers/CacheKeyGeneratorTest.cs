@@ -10,7 +10,7 @@ public class CacheKeyGeneratorTest
     private class TestRequest
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
     [Fact]
@@ -18,7 +18,7 @@ public class CacheKeyGeneratorTest
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            RequestOutputCacheHelper.GetCacheKey<TestRequest>(null));
+            RequestOutputCacheHelper.GetCacheKey<TestRequest>(null!));
     }
 
     [Theory]

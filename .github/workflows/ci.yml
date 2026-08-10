@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,6 +13,8 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      CI: true
 
     steps:
       - name: Checkout code
@@ -19,7 +23,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
 
       - name: Restore dependencies
         run: dotnet restore
@@ -29,3 +36,132 @@ jobs:
 
       - name: Run tests
         run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack libraries
+        run: |
+          dotnet pack src/NexGen.MediatR.Extensions.Caching/NexGen.MediatR.Extensions.Caching.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/NexGen.MediatR.Extensions.Caching.Redis/NexGen.MediatR.Extensions.Caching.Redis.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/NexGen.MediatR.Extensions.Caching.Garnet/NexGen.MediatR.Extensions.Caching.Garnet.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/NexGen.MediatR.Extensions.Caching.EntityFramework/NexGen.MediatR.Extensions.Caching.EntityFramework.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts/
+          retention-days: 14
+
+  publish:
+    name: Publish to NuGet
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download NuGet packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts
+
+      - name: Read package version and release notes
+        id: meta
+        shell: bash
+        run: |
+          VERSION=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' src/Directory.Build.props | head -n 1 | tr -d '[:space:]')
+          NOTES=$(sed -n 's/.*<PackageReleaseNotes>\([^<]*\)<\/PackageReleaseNotes>.*/\1/p' src/Directory.Build.props | head -n 1)
+
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::Could not read <Version> from src/Directory.Build.props"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "notes<<EOF"
+            echo "${NOTES:-Release v$VERSION}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Package version: $VERSION"
+
+      - name: Check if version already published
+        id: check
+        shell: bash
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          PACKAGE_ID="nexgen.mediatr.extensions.caching"
+          URL="https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID}/${VERSION}/${PACKAGE_ID}.${VERSION}.nupkg"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+
+          if [[ "$STATUS" == "200" ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version $VERSION is already on NuGet — skipping publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Version $VERSION is not on NuGet — will publish."
+          fi
+
+      - name: Setup .NET
+        if: steps.check.outputs.exists != 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Push packages to NuGet.org
+        if: steps.check.outputs.exists != 'true'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "$NUGET_API_KEY" ]]; then
+            echo "::error::Secret NUGET_API_KEY is not set. Add a NuGet.org API key under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+          shopt -s nullglob
+          NUPKGS=(artifacts/*.nupkg)
+          SNUPKGS=(artifacts/*.snupkg)
+
+          if [[ ${#NUPKGS[@]} -eq 0 ]]; then
+            echo "::error::No .nupkg files found in artifacts/"
+            exit 1
+          fi
+
+          dotnet nuget push "${NUPKGS[@]}" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+          if [[ ${#SNUPKGS[@]} -gt 0 ]]; then
+            dotnet nuget push "${SNUPKGS[@]}" \
+              --api-key "$NUGET_API_KEY" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          fi
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.meta.outputs.version }}
+          name: v${{ steps.meta.outputs.version }}
+          body: |
+            ${{ steps.meta.outputs.notes }}
+
+            ### Packages
+            - [NexGen.MediatR.Extensions.Caching](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching/${{ steps.meta.outputs.version }})
+            - [NexGen.MediatR.Extensions.Caching.Redis](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.Redis/${{ steps.meta.outputs.version }})
+            - [NexGen.MediatR.Extensions.Caching.Garnet](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.Garnet/${{ steps.meta.outputs.version }})
+            - [NexGen.MediatR.Extensions.Caching.EntityFramework](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.EntityFramework/${{ steps.meta.outputs.version }})
+          files: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

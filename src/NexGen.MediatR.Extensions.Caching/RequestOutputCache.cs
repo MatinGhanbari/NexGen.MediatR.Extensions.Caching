@@ -142,12 +142,13 @@ public sealed class RequestOutputCache<TRequest, TResponse>
     {
         foreach (var tagType in tagTypes.TakeWhile(_ => !cancellationToken.IsCancellationRequested))
         {
-            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string>? cacheTypes))
+            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string?>? cacheTypes) || cacheTypes is null)
                 continue;
 
             foreach (var cacheType in cacheTypes)
             {
-                _memoryCache.Remove(cacheType);
+                if (cacheType is not null)
+                    _memoryCache.Remove(cacheType);
             }
         }
 

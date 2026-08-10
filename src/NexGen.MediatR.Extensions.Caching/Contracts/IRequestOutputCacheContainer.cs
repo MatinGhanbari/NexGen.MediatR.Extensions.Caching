@@ -9,7 +9,7 @@ namespace NexGen.MediatR.Extensions.Caching.Contracts;
 public interface IRequestOutputCacheContainer
 {
     Task<Type?> GetResponseTypeAsync<TRequest>(CancellationToken cancellationToken = default);
-    Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type responseType = null, CancellationToken cancellationToken = default);
+    Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type? responseType = null, CancellationToken cancellationToken = default);
     Task<ReadOnlyDictionary<string, HashSet<string>>> GetCacheTagsAsync(CancellationToken cancellationToken = default);
     Task<ReadOnlyDictionary<string, HashSet<string?>>> GetCacheTypesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,0 +1,38 @@
+<Project>
+
+  <!-- Framework-aligned dependency versions (evaluated per TargetFramework during multi-targeting). -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <MicrosoftExtensionsVersion>8.0.1</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>8.0.0</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>8.0.2</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftAspNetCoreAppVersion>8.0.20</MicrosoftAspNetCoreAppVersion>
+    <EfCoreVersion>8.0.20</EfCoreVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <MicrosoftExtensionsVersion>9.0.10</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>9.0.10</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.10</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftAspNetCoreAppVersion>9.0.10</MicrosoftAspNetCoreAppVersion>
+    <EfCoreVersion>9.0.10</EfCoreVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <MicrosoftExtensionsVersion>10.0.10</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>10.0.10</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.10</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftAspNetCoreAppVersion>10.0.10</MicrosoftAspNetCoreAppVersion>
+    <EfCoreVersion>10.0.10</EfCoreVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MicrosoftExtensionsVersion)' != ''">
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" VersionOverride="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" VersionOverride="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" VersionOverride="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Caching.StackExchangeRedis" VersionOverride="$(MicrosoftAspNetCoreAppVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore" VersionOverride="$(EfCoreVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" VersionOverride="$(EfCoreVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Design" VersionOverride="$(EfCoreVersion)" />
+  </ItemGroup>
+
+</Project>

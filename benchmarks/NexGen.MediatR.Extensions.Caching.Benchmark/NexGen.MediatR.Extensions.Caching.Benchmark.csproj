@@ -1,21 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
- 
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
- 
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj" />
     <ProjectReference Include="..\..\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
-	<PackageReference Include="MediatR" Version="13.0.0" />
-	<PackageReference Include="MediatR.Contracts" Version="2.0.1" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="MediatR.Contracts" />
   </ItemGroup>
 
 </Project>
