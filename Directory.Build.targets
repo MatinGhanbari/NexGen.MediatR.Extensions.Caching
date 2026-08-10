@@ -29,6 +29,10 @@
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" VersionOverride="$(MicrosoftExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" VersionOverride="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" VersionOverride="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Hosting.Abstractions" VersionOverride="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" VersionOverride="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Logging" VersionOverride="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Hosting" VersionOverride="$(MicrosoftExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Caching.StackExchangeRedis" VersionOverride="$(MicrosoftAspNetCoreAppVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" VersionOverride="$(EfCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" VersionOverride="$(EfCoreVersion)" />

@@ -25,6 +25,24 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 - (none yet)
 
+## [1.2.0] - 2026-08-10
+
+### Added
+
+- CQRS **eviction bus** for dual DI / split command-query hosts:
+  - `IRequestOutputCacheEvictionPublisher` / `IRequestOutputCacheEvictionSubscriber` and `RequestOutputCacheEvictionMessage`
+  - `AddMediatROutputCacheEviction` for command-only publisher registration
+  - Built-in **in-process** bus (`InProcessRequestOutputCacheEvictionBus`) for co-deployed dual DI
+  - Built-in **Redis / Garnet Pub/Sub** buses (`UseRedisEvictionBus` / `UseGarnetEvictionBus`)
+  - Pluggable **custom** publisher/subscriber adapters for existing RabbitMQ, Kafka, MassTransit, etc. (`UseCustomEvictionPublisher` / `UseCustomEvictionSubscriber`)
+  - `RequestOutputCacheEvictionHostedService` on query hosts to apply bus messages via `EvictByTagsAsync`
+  - `[RequestOutputCacheEvict]` attribute and pipeline behavior for non-EF commands
+- Suggested bus topic constant `RequestOutputCacheEvictionConstants.DefaultBusTopic` (`mediatr.outputcache.evict`)
+
+### Changed
+
+- EF Core `ChangeTrackerInterceptor` now captures **Added / Modified / Deleted** entity type names before save, prefers publishing on the eviction bus when registered, falls back to local `IRequestOutputCacheInvalidator`, unwraps via `Metadata.ClrType`, and supports sync `SaveChanges` as well as async.
+
 ## [1.1.0] - 2026-08-10
 
 ### Added
@@ -54,6 +72,7 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.2.0
 [1.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.1.0
 [1.0.8]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.0.8
