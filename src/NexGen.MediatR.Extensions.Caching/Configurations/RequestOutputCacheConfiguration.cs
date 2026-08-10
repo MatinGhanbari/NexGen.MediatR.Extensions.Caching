@@ -34,6 +34,7 @@ public static class RequestOutputCacheConfiguration
     /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
     private static IServiceCollection AddMediatROutputCache(this IServiceCollection services)
     {
+        RequestOutputCacheDefaultsRegistration.Apply(services, defaultExpirationInSeconds: null);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestOutputCacheBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestOutputCacheEvictBehavior<,>));
         return services;

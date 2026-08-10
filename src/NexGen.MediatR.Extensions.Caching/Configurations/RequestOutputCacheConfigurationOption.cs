@@ -41,10 +41,30 @@ public class RequestOutputCacheConfigurationOption
     /// </exception>
     public void UseMemoryCache()
     {
+        UseMemoryCache(_ => { });
+    }
+
+    /// <summary>
+    /// Configures the library to use in-memory caching for MediatR request responses.
+    /// </summary>
+    /// <param name="configure">Action used to configure memory cache provider options.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="configure"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if a cache type has already been configured.
+    /// </exception>
+    public void UseMemoryCache(Action<MemoryRequestOutputCacheOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
         if (RequestOutputCacheType != default)
             throw new InvalidOperationException(ErrorMessages.AlreadyConfigured);
 
+        var memoryOptions = new MemoryRequestOutputCacheOptions();
+        configure(memoryOptions);
+
         RequestOutputCacheType = RequestOutputCacheType.MemoryCache;
+
+        RequestOutputCacheDefaultsRegistration.Apply(Services, memoryOptions.DefaultExpirationInSeconds);
 
         Services.AddMemoryCache();
         Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RequestOutputCache<,>));

@@ -67,7 +67,7 @@ Invalidation is **tag-based**: associate tags with cached requests, then evict b
 | **CQRS eviction bus** | Cross-DI / split-host invalidation via in-process bus, Redis/Garnet Pub/Sub, or custom Rabbit/Kafka/MassTransit adapters. |
 | **Command eviction attribute** | `[RequestOutputCacheEvict]` publishes or evicts tags after a successful command. |
 | **Deterministic cache keys** | Key = `{RequestTypeName}:{SHA-256(JSON)}` from the serialized request payload. |
-| **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. |
+| **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. Provider `DefaultExpirationInSeconds` can replace the library default when the attribute omits an explicit value. |
 | **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
 | **Clear on startup** | Optional `ClearCacheOnStartup()` during DI configuration. |
 | **FluentResults** | Cache get/set/evict APIs return `Result` / `Result<T>` for success and failure paths. |
@@ -158,12 +158,36 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
+Optional provider defaults (applied when the attribute omits an explicit `expirationInSeconds`, i.e. uses the library constant **300**):
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache(o => o.DefaultExpirationInSeconds = 600);
+});
+```
+
 ### Redis
 
 ```csharp
 builder.Services.AddMediatROutputCache(opt =>
 {
     opt.UseRedisCache("localhost:6379,password=YourRedisPassword");
+});
+```
+
+Provider-specific options (`InstanceName`, `Database`, default TTL, or advanced `ConfigurationOptions`):
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseRedisCache(o =>
+    {
+        o.ConnectionString = builder.Configuration.GetConnectionString("Redis")!;
+        o.InstanceName = "my-app:";
+        o.Database = 1;
+        o.DefaultExpirationInSeconds = 300;
+    });
 });
 ```
 
@@ -176,6 +200,9 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
+Same nested options pattern as Redis via `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`.
+
+> **TTL precedence:** an explicit `expirationInSeconds` on `[RequestOutputCache]` always wins (including `0` for never expire). Provider `DefaultExpirationInSeconds` only replaces the library default when the attribute uses the constructor default (**300**). Explicit `300` is indistinguishable from that default.
 ### Entity Framework auto-evict
 
 After a successful `SaveChanges` / `SaveChangesAsync`, the interceptor collects distinct entity CLR type **names** and calls `EvictByTagsAsync` with those names. Request tags must match (typically `nameof(YourEntity)`).

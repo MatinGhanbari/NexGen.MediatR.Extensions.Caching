@@ -1,5 +1,7 @@
 using MediatR;
 using NexGen.MediatR.Extensions.Caching.Attributes;
+using NexGen.MediatR.Extensions.Caching.Configurations;
+using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 
 namespace NexGen.MediatR.Extensions.Caching.Behaviors;
@@ -14,6 +16,7 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     private readonly IRequestOutputCache<TRequest, TResponse> _requestOutputCache;
+    private readonly RequestOutputCacheDefaults _defaults;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequestOutputCacheBehavior{TRequest, TResponse}"/> class.
@@ -21,9 +24,16 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
     /// <param name="requestOutputCache">
     /// The cache service that handles storing and retrieving request responses.
     /// </param>
-    public RequestOutputCacheBehavior(IRequestOutputCache<TRequest, TResponse> requestOutputCache)
+    /// <param name="defaults">
+    /// Optional library defaults. When <see cref="RequestOutputCacheDefaults.DefaultExpirationInSeconds"/> is set,
+    /// it replaces the attribute constructor default expiration.
+    /// </param>
+    public RequestOutputCacheBehavior(
+        IRequestOutputCache<TRequest, TResponse> requestOutputCache,
+        RequestOutputCacheDefaults? defaults = null)
     {
         _requestOutputCache = requestOutputCache;
+        _defaults = defaults ?? new RequestOutputCacheDefaults();
     }
 
     /// <summary>
@@ -54,8 +64,19 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
         var result = await next(cancellationToken);
 
         var tags = attribute.Tags;
-        var expiration = attribute.ExpirationInSeconds;
+        var expiration = ResolveExpiration(attribute.ExpirationInSeconds);
         await _requestOutputCache.SetAsync(request, result, tags, expiration, cancellationToken).ConfigureAwait(false);
         return result;
+    }
+
+    private int ResolveExpiration(int attributeExpirationInSeconds)
+    {
+        if (attributeExpirationInSeconds == RequestCacheConstants.DefaultExpirationInSeconds
+            && _defaults.DefaultExpirationInSeconds is int providerDefault)
+        {
+            return providerDefault;
+        }
+
+        return attributeExpirationInSeconds;
     }
 }
