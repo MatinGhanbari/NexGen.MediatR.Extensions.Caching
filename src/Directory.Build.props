@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>MatinGhanbari</Authors>
     <Copyright>© 2026 MatinGhanbari</Copyright>
-    <Version>1.2.0</Version>
-    <PackageReleaseNotes>Release v1.2.0 — CQRS cross-DI eviction bus (in-process, Redis/Garnet Pub/Sub, custom Rabbit/Kafka adapters), RequestOutputCacheEvict attribute, EF auto-evict publishes via bus when configured.</PackageReleaseNotes>
+    <Version>1.3.0</Version>
+    <PackageReleaseNotes>Release v1.3.0</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
