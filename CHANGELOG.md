@@ -10,6 +10,8 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-08-11
+
 ### Fixed
 
 - Redis / Garnet: shared container metadata no longer deserializes `Dictionary<Type, Type>`, which broke `SetAsync` for a second app on the same Redis when another service had already written response-type entries (foreign assemblies could not be resolved). Type maps are stored as strings; tag/type indexes always persist when a new cache key is added.
