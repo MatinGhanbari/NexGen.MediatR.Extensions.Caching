@@ -191,6 +191,8 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
+> **Multiple apps on one Redis:** set a distinct `InstanceName` (and/or `Database`) per service. CLR namespaces in response cache keys do **not** isolate the shared container index keys (`…:Container:*`). Without a prefix, apps share that metadata on the same database.
+
 ### Garnet
 
 ```csharp
@@ -200,7 +202,7 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
-Same nested options pattern as Redis via `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`.
+Same nested options pattern as Redis via `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`. Use a distinct `InstanceName` / `Database` when multiple apps share one Garnet instance (same guidance as Redis above).
 
 > **TTL precedence:** an explicit `expirationInSeconds` on `[RequestOutputCache]` always wins (including `0` for never expire). Provider `DefaultExpirationInSeconds` only replaces the library default when the attribute uses the constructor default (**300**). Explicit `300` is indistinguishable from that default.
 ### Entity Framework auto-evict

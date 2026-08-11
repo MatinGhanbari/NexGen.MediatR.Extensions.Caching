@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** are released in **lockstep**.
 
 
+## [Unreleased]
+
+### Fixed
+
+- Redis / Garnet: shared container metadata no longer deserializes `Dictionary<Type, Type>`, which broke `SetAsync` for a second app on the same Redis when another service had already written response-type entries (foreign assemblies could not be resolved). Type maps are stored as strings; tag/type indexes always persist when a new cache key is added.
+
 ## [1.4.0] - 2026-08-11
 
 ### Changed
