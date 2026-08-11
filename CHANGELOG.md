@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** are released in **lockstep**.
 
-## [Unreleased]
+
+## [1.4.0] - 2026-08-11
+
+### Changed
+
+- Cache keys now include the request **namespace** (dots → `:` for Redis tree browsing) and the library root prefix `NexGen.MediatR.Extensions`, so entries look like:
+  `NexGen.MediatR.Extensions:MyApp:Users:Queries:GetUserQuery:{sha256}`
+  and two requests with the same short type name in different namespaces no longer collide (#47).
+- Redis / Garnet **container** and **eviction channel** keys use the same root prefix (`NexGen.MediatR.Extensions:Container:*`, `NexGen.MediatR.Extensions:Evict`) instead of `NexGen.MediatR.Caching:*`.
+- Public constant `RequestCacheConstants.CacheKeyRootPrefix` documents the shared root.
+
+> **Migration:** existing in-memory / Redis / Garnet entries written with the old key format are not read by this version. Flush or wait for TTL before or after upgrading if you need a clean store.
+
+## [1.3.0] - 2026-08-10
 
 ### Added
 
@@ -16,18 +29,6 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
   - `UseRedisCache(Action<RedisRequestOutputCacheOptions>)` / `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`
   - Optional `InstanceName`, `Database`, `ConfigurationOptions`, and `DefaultExpirationInSeconds`
   - Existing string / parameterless overloads unchanged (delegate to the new APIs)
-
-### Changed
-
-- (none yet)
-
-### Fixed
-
-- (none yet)
-
-### Removed
-
-- (none yet)
 
 ## [1.2.0] - 2026-08-10
 
@@ -76,7 +77,7 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.0
+[1.3.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.3.0
 [1.2.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.2.0
-[1.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.1.0
-[1.0.8]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.0.8

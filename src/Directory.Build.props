@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>MatinGhanbari</Authors>
     <Copyright>© 2026 MatinGhanbari</Copyright>
-    <Version>1.3.0</Version>
-    <PackageReleaseNotes>Release v1.3.0</PackageReleaseNotes>
+    <Version>1.4.0</Version>
+    <PackageReleaseNotes>Release v1.4.0 — namespaced hierarchical cache keys under NexGen.MediatR.Extensions</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>

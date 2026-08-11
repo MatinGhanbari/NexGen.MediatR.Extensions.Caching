@@ -66,7 +66,7 @@ Invalidation is **tag-based**: associate tags with cached requests, then evict b
 | **EF Core auto-evict** | On `SaveChanges` / `SaveChangesAsync`, evict tags matching changed entity type **names** (`UseMediatROutputCacheAutoEvict`). |
 | **CQRS eviction bus** | Cross-DI / split-host invalidation via in-process bus, Redis/Garnet Pub/Sub, or custom Rabbit/Kafka/MassTransit adapters. |
 | **Command eviction attribute** | `[RequestOutputCacheEvict]` publishes or evicts tags after a successful command. |
-| **Deterministic cache keys** | Key = `{RequestTypeName}:{SHA-256(JSON)}` from the serialized request payload. |
+| **Deterministic cache keys** | Key = `NexGen.MediatR.Extensions:{Namespace:segments}:{TypeName}:{SHA-256(JSON)}` — namespaced, Redis-tree friendly, collision-safe across namespaces. |
 | **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. Provider `DefaultExpirationInSeconds` can replace the library default when the attribute omits an explicit value. |
 | **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
 | **Clear on startup** | Optional `ClearCacheOnStartup()` during DI configuration. |
@@ -380,7 +380,7 @@ public sealed record CreateUserCommand(string Name) : IRequest<Unit>;
                               ├─ hit  → return cached TResponse
                               └─ miss → handler → store → return TResponse
 
-Key:   {RequestType.Name}:{sha256(json(request))}
+Key:   NexGen.MediatR.Extensions:{Namespace:with:colons}:{TypeName}:{sha256(json(request))}
 Index: tag → request types → cache keys  (via IRequestOutputCacheContainer)
 Evict: EvictByTagsAsync(tags)
        or EF ChangeTracker → entity type Name as tags

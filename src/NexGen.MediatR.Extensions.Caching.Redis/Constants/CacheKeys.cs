@@ -1,9 +1,13 @@
-﻿namespace NexGen.MediatR.Extensions.Caching.Redis.Constants;
+﻿using NexGen.MediatR.Extensions.Caching.Constants;
+
+namespace NexGen.MediatR.Extensions.Caching.Redis.Constants;
 
 internal static class CacheKeys
 {
-    internal const string CacheTypesKey = "NexGen.MediatR.Caching:Container:CacheTypes";
-    internal const string CacheTagsKey = "NexGen.MediatR.Caching:Container:CacheTags";
-    internal const string RequestResponseTypesKey = "NexGen.MediatR.Caching:Container:RequestResponseTypes";
-    internal const string EvictionChannel = "NexGen.MediatR.Caching:Evict";
+    private const string Root = RequestCacheConstants.CacheKeyRootPrefix;
+
+    internal const string CacheTypesKey = Root + ":Container:CacheTypes";
+    internal const string CacheTagsKey = Root + ":Container:CacheTags";
+    internal const string RequestResponseTypesKey = Root + ":Container:RequestResponseTypes";
+    internal const string EvictionChannel = Root + ":Evict";
 }
