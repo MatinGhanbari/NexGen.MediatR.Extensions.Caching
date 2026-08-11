@@ -15,5 +15,5 @@ public static class RequestCacheConstants
     /// Root prefix for all library cache keys (response entries, container indexes, eviction channel).
     /// Uses <c>:</c> as the Redis hierarchy separator so keys appear under a single tree.
     /// </summary>
-    public const string CacheKeyRootPrefix = "NexGen.MediatR.Extensions";
+    public const string CacheKeyRootPrefix = "NexGen.MediatR.Extensions.Caching";
 }
