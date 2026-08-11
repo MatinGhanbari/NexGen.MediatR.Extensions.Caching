@@ -71,7 +71,11 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
                 AbsoluteExpirationRelativeToNow = expirationInSeconds != default ? TimeSpan.FromSeconds(expirationInSeconds) : null,
             };
 
-            var containerResult = await _cacheContainer.UpdateContainerAsync<TRequest>(tags, cacheKey, response?.GetType() ?? typeof(TResponse));
+            var containerResult = await _cacheContainer.UpdateContainerAsync<TRequest>(
+                tags,
+                cacheKey,
+                response?.GetType() ?? typeof(TResponse),
+                cancellationToken);
             if (containerResult.IsFailed)
                 return Result.Fail(ErrorMessages.FailedToUpdateContainer);
 

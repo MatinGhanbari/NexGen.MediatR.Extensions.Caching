@@ -25,7 +25,7 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
         var requestResponseTypes = DeserializeStringMap(response);
         var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
 
-        if (!requestResponseTypes.TryGetValue(requestTypeName, out var responseTypeName)
+        if (!TryResolveResponseTypeName(requestResponseTypes, requestTypeName, out var responseTypeName)
             || string.IsNullOrEmpty(responseTypeName))
         {
             return null;
@@ -172,5 +172,34 @@ public class GarnetOutputCacheContainer : IRequestOutputCacheContainer
 
         return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)
                ?? new Dictionary<string, string>();
+    }
+
+    /// <summary>
+    /// Resolves a response type name using the current FullName key, or a legacy
+    /// AssemblyQualifiedName key written by older Dictionary&lt;Type, Type&gt; serialization.
+    /// </summary>
+    private static bool TryResolveResponseTypeName(
+        Dictionary<string, string> map,
+        string requestTypeName,
+        out string? responseTypeName)
+    {
+        if (map.TryGetValue(requestTypeName, out responseTypeName)
+            && !string.IsNullOrEmpty(responseTypeName))
+        {
+            return true;
+        }
+
+        foreach (var entry in map)
+        {
+            if (entry.Key.StartsWith(requestTypeName + ",", StringComparison.Ordinal)
+                && !string.IsNullOrEmpty(entry.Value))
+            {
+                responseTypeName = entry.Value;
+                return true;
+            }
+        }
+
+        responseTypeName = null;
+        return false;
     }
 }

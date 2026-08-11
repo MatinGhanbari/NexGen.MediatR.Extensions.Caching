@@ -10,6 +10,13 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+## [1.4.3] - 2026-08-11
+
+### Fixed
+
+- Redis / Garnet: `GetResponseTypeAsync` resolves legacy `AssemblyQualifiedName` keys left by pre-1.4.2 `Dictionary<Type, Type>` serialization (in addition to current `FullName` keys).
+- Redis: `SetAsync` now forwards `CancellationToken` to `UpdateContainerAsync` (parity with Garnet).
+
 ## [1.4.2] - 2026-08-11
 
 ### Fixed
