@@ -37,6 +37,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore" VersionOverride="$(EfCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" VersionOverride="$(EfCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore.Design" VersionOverride="$(EfCoreVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" VersionOverride="$(EfCoreVersion)" />
   </ItemGroup>
 
 </Project>

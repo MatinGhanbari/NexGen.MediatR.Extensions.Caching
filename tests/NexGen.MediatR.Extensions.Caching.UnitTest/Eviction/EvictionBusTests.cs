@@ -170,6 +170,28 @@ public sealed class RequestOutputCacheEvictBehaviorTests
     }
 
     [Fact]
+    public async Task EvictAttribute_LocalInvalidator_EvictsTagsWithoutPublisher()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMediatROutputCache(opt => opt.UseMemoryCache());
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<RequestOutputCacheEvictBehaviorTests>());
+        services.AddTransient<IRequestHandler<EvictCommand, Unit>, EvictCommandHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var cache = provider.GetRequiredService<IRequestOutputCache<SampleCachedQuery, string>>();
+        var query = new SampleCachedQuery(1);
+        Assert.True((await cache.SetAsync(query, "cached", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+
+        var mediator = provider.GetRequiredService<IMediator>();
+        await mediator.Send(new EvictCommand());
+
+        Assert.True((await cache.GetAsync(query)).IsFailed);
+    }
+
+    private sealed record SampleCachedQuery(int Id) : IRequest<string>;
+
+    [Fact]
     public async Task EvictAttribute_PublishesTagsOnSuccess()
     {
         var published = new List<string[]>();

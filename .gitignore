@@ -365,3 +365,6 @@ FodyWeavers.xsd
 **/.idea*
 
 .nuget-packages
+
+# Production hardening plan and issue drafts (tracked on GitHub Issues)
+docs/
