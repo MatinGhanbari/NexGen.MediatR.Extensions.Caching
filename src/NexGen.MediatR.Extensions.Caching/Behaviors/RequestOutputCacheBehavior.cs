@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using NexGen.MediatR.Extensions.Caching.Attributes;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
@@ -17,6 +18,7 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
 {
     private readonly IRequestOutputCache<TRequest, TResponse> _requestOutputCache;
     private readonly RequestOutputCacheDefaults _defaults;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequestOutputCacheBehavior{TRequest, TResponse}"/> class.
@@ -28,12 +30,18 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
     /// Optional library defaults. When <see cref="RequestOutputCacheDefaults.DefaultExpirationInSeconds"/> is set,
     /// it replaces the attribute constructor default expiration.
     /// </param>
+    /// <param name="httpContextAccessor">
+    /// Optional HTTP context accessor used to set the cache-hit response header
+    /// when <see cref="RequestOutputCacheDefaults.EnableCacheHitResponseHeader"/> is enabled.
+    /// </param>
     public RequestOutputCacheBehavior(
         IRequestOutputCache<TRequest, TResponse> requestOutputCache,
-        RequestOutputCacheDefaults? defaults = null)
+        RequestOutputCacheDefaults? defaults = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _requestOutputCache = requestOutputCache;
         _defaults = defaults ?? new RequestOutputCacheDefaults();
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -48,25 +56,41 @@ public class RequestOutputCacheBehavior<TRequest, TResponse>
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         if (_requestOutputCache == null)
-            return await next(cancellationToken);
+            return await next(cancellationToken).ConfigureAwait(false);
 
         var attribute = (RequestOutputCacheAttribute)typeof(TRequest)
             .GetCustomAttributes(typeof(RequestOutputCacheAttribute), false)
             .FirstOrDefault()!;
 
         if (attribute == null)
-            return await next(cancellationToken);
+            return await next(cancellationToken).ConfigureAwait(false);
 
-        var cachedResult = await _requestOutputCache.GetAsync(request, cancellationToken);
+        var cachedResult = await _requestOutputCache.GetAsync(request, cancellationToken).ConfigureAwait(false);
         if (cachedResult.IsSuccess)
+        {
+            TrySetCacheHitResponseHeader();
             return cachedResult.Value;
+        }
 
-        var result = await next(cancellationToken);
+        var result = await next(cancellationToken).ConfigureAwait(false);
 
         var tags = attribute.Tags;
         var expiration = ResolveExpiration(attribute.ExpirationInSeconds);
         await _requestOutputCache.SetAsync(request, result, tags, expiration, cancellationToken).ConfigureAwait(false);
         return result;
+    }
+
+    private void TrySetCacheHitResponseHeader()
+    {
+        if (!_defaults.EnableCacheHitResponseHeader)
+            return;
+
+        var response = _httpContextAccessor?.HttpContext?.Response;
+        if (response is null || response.HasStarted)
+            return;
+
+        response.Headers[RequestCacheConstants.CacheHitResponseHeaderName] =
+            RequestCacheConstants.CacheHitResponseHeaderValue;
     }
 
     private int ResolveExpiration(int attributeExpirationInSeconds)

@@ -13,13 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MediatR" />
     <PackageReference Include="FluentResults" />
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>

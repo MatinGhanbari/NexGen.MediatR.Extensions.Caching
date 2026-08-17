@@ -33,6 +33,7 @@
   - [Entity Framework auto-evict](#entity-framework-auto-evict)
   - [Distributed eviction (Redis / Garnet)](#distributed-eviction-redis--garnet)
   - [Clear cache on startup](#clear-cache-on-startup)
+  - [Cache-hit response header](#cache-hit-response-header)
 - [Production checklist](#production-checklist)
 - [Caching requests](#caching-requests)
 - [Invalidation](#invalidation)
@@ -71,6 +72,7 @@ Invalidation is **tag-based**: associate tags with cached requests, then evict b
 | **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. Provider `DefaultExpirationInSeconds` can replace the library default when the attribute omits an explicit value. |
 | **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
 | **Clear on startup** | Optional `ClearCacheOnStartup()` during DI configuration. |
+| **Cache-hit response header** | On an ASP.NET Core cache hit, sets `X-NexGen-Output-Cache: HIT` (on by default; call `EnableCacheHitResponseHeader(false)` to opt out). |
 | **FluentResults** | Cache get/set/evict APIs return `Result` / `Result<T>` for success and failure paths. |
 | **ASP.NET Core DI** | Integrates with `IServiceCollection` and standard Microsoft.Extensions.Caching abstractions. |
 | **Enterprise packaging** | Central Package Management, SourceLink, symbol packages (`.snupkg`), XML docs on public APIs. |
@@ -264,6 +266,26 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
+### Cache-hit response header
+
+When a cached MediatR response is served during an ASP.NET Core HTTP request, the pipeline sets:
+
+```http
+X-NexGen-Output-Cache: HIT
+```
+
+This is **on by default**. Cache misses, unannotated requests, and non-HTTP MediatR executions (console, workers, tests without `HttpContext`) do not set the header.
+
+Opt out:
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache();
+    opt.EnableCacheHitResponseHeader(false);
+});
+```
+
 ---
 
 ## Production checklist
@@ -350,7 +372,7 @@ public sealed record CreateUserCommand(string Name) : IRequest<Result>;
 ```text
 [RequestOutputCache]  →  RequestOutputCacheBehavior
                               │
-                              ├─ hit  → return cached TResponse
+                              ├─ hit  → set X-NexGen-Output-Cache: HIT (HTTP) → return cached TResponse
                               └─ miss → handler → store → return TResponse
 
 [RequestOutputCacheEvict] → handler succeeds → RequestOutputCacheEvictionDispatcher

@@ -12,4 +12,12 @@ public sealed class RequestOutputCacheDefaults
     /// for attributes that omit an explicit expiration value (constructor default).
     /// </summary>
     public int? DefaultExpirationInSeconds { get; set; }
+
+    /// <summary>
+    /// When <see langword="true"/>, a cache hit during an ASP.NET Core HTTP request
+    /// sets the <c>X-NexGen-Output-Cache: HIT</c> response header.
+    /// Defaults to <see langword="true"/>. Disable with
+    /// <see cref="RequestOutputCacheConfigurationOption.EnableCacheHitResponseHeader"/>.
+    /// </summary>
+    public bool EnableCacheHitResponseHeader { get; set; } = true;
 }

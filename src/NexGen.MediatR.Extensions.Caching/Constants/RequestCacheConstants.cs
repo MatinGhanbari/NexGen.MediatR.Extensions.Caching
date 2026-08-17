@@ -16,4 +16,14 @@ public static class RequestCacheConstants
     /// Uses <c>:</c> as the Redis hierarchy separator so keys appear under a single tree.
     /// </summary>
     public const string CacheKeyRootPrefix = "NexGen.MediatR.Extensions.Caching";
+
+    /// <summary>
+    /// HTTP response header name set on a cache hit during an ASP.NET Core request.
+    /// </summary>
+    public const string CacheHitResponseHeaderName = "X-NexGen-Output-Cache";
+
+    /// <summary>
+    /// HTTP response header value set on a cache hit during an ASP.NET Core request.
+    /// </summary>
+    public const string CacheHitResponseHeaderValue = "HIT";
 }

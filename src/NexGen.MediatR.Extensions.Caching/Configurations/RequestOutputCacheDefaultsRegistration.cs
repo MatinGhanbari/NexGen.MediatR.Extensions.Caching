@@ -15,6 +15,21 @@ public static class RequestOutputCacheDefaultsRegistration
     /// <param name="services">The service collection.</param>
     /// <param name="defaultExpirationInSeconds">Optional provider-level default expiration.</param>
     public static void Apply(IServiceCollection services, int? defaultExpirationInSeconds)
+        => Apply(services, defaultExpirationInSeconds, enableCacheHitResponseHeader: null);
+
+    /// <summary>
+    /// Ensures a <see cref="RequestOutputCacheDefaults"/> singleton is available, and applies
+    /// provider defaults when provided.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="defaultExpirationInSeconds">Optional provider-level default expiration.</param>
+    /// <param name="enableCacheHitResponseHeader">
+    /// Optional override for <see cref="RequestOutputCacheDefaults.EnableCacheHitResponseHeader"/>.
+    /// </param>
+    public static void Apply(
+        IServiceCollection services,
+        int? defaultExpirationInSeconds,
+        bool? enableCacheHitResponseHeader)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -23,12 +38,15 @@ public static class RequestOutputCacheDefaultsRegistration
         {
             if (defaultExpirationInSeconds.HasValue)
                 instance.DefaultExpirationInSeconds = defaultExpirationInSeconds;
+            if (enableCacheHitResponseHeader.HasValue)
+                instance.EnableCacheHitResponseHeader = enableCacheHitResponseHeader.Value;
             return;
         }
 
         services.TryAddSingleton(new RequestOutputCacheDefaults
         {
-            DefaultExpirationInSeconds = defaultExpirationInSeconds
+            DefaultExpirationInSeconds = defaultExpirationInSeconds,
+            EnableCacheHitResponseHeader = enableCacheHitResponseHeader ?? true
         });
     }
 }

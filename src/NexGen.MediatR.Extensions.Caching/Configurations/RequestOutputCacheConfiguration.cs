@@ -36,6 +36,7 @@ public static class RequestOutputCacheConfiguration
     private static IServiceCollection AddMediatROutputCache(this IServiceCollection services)
     {
         RequestOutputCacheDefaultsRegistration.Apply(services, defaultExpirationInSeconds: null);
+        services.AddHttpContextAccessor();
         services.TryAddSingleton<RequestOutputCacheEvictionNode>();
         services.AddScoped<RequestOutputCacheEvictionDispatcher>();
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestOutputCacheBehavior<,>));
