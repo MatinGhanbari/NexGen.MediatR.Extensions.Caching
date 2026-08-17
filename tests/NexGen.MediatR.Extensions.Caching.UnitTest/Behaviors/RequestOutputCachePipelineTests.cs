@@ -43,7 +43,7 @@ public sealed class RequestOutputCachePipelineTests
     }
 
     [Fact]
-    public async Task CachedQuery_SecondSend_ReturnsCachedWithoutReExecutingHandler()
+    public static async Task CachedQuery_SecondSend_ReturnsCachedWithoutReExecutingHandler()
     {
         _handlerInvocationCount = 0;
         await using var provider = BuildQueryProvider();
@@ -58,7 +58,7 @@ public sealed class RequestOutputCachePipelineTests
     }
 
     [Fact]
-    public async Task UncachedQuery_AlwaysExecutesHandler()
+    public static async Task UncachedQuery_AlwaysExecutesHandler()
     {
         _handlerInvocationCount = 0;
         await using var provider = BuildQueryProvider();
@@ -71,7 +71,7 @@ public sealed class RequestOutputCachePipelineTests
     }
 
     [Fact]
-    public async Task EvictCommand_WithLocalInvalidator_ClearsCachedQuery()
+    public static async Task EvictCommand_WithLocalInvalidator_ClearsCachedQuery()
     {
         _handlerInvocationCount = 0;
         var services = new ServiceCollection();
