@@ -14,6 +14,7 @@ public sealed class GarnetRequestOutputCacheOptions
 
     /// <summary>
     /// Optional key prefix applied by <c>IDistributedCache</c> (<c>RedisCacheOptions.InstanceName</c>).
+    /// When set, the eviction Pub/Sub channel is also prefixed so co-tenant apps do not cross-evict.
     /// </summary>
     public string? InstanceName { get; set; }
 
@@ -33,4 +34,17 @@ public sealed class GarnetRequestOutputCacheOptions
     /// When set, takes precedence over <see cref="ConnectionString"/> for connection settings.
     /// </summary>
     public ConfigurationOptions? ConfigurationOptions { get; set; }
+
+    /// <summary>
+    /// When <see langword="true"/> (the default), this host publishes and subscribes to Garnet Pub/Sub
+    /// so other services using the same cache prefix invalidate matching tags.
+    /// Set to <see langword="false"/> to keep eviction local to this process.
+    /// </summary>
+    public bool EnableDistributedEviction { get; set; } = true;
+
+    /// <summary>
+    /// Optional Pub/Sub channel for eviction notifications.
+    /// Defaults to <c>NexGen.MediatR.Extensions.Caching:Evict</c>, prefixed by <see cref="InstanceName"/> when set.
+    /// </summary>
+    public string? EvictionChannel { get; set; }
 }

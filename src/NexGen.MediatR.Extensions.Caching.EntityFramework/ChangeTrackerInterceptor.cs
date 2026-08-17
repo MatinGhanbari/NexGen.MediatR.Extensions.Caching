@@ -4,14 +4,13 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Constants;
-using NexGen.MediatR.Extensions.Caching.Contracts;
-using NexGen.MediatR.Extensions.Caching.Messages;
+using NexGen.MediatR.Extensions.Caching.Eviction;
 
 namespace NexGen.MediatR.Extensions.Caching.EntityFramework;
 
 /// <summary>
 /// EF Core interceptor that invalidates MediatR output-cache entries for changed entity types
-/// after a successful save, either by publishing on an eviction bus or by calling the local invalidator.
+/// after a successful save, using <see cref="RequestOutputCacheEvictionDispatcher"/>.
 /// </summary>
 public class ChangeTrackerInterceptor : SaveChangesInterceptor
 {
@@ -22,7 +21,7 @@ public class ChangeTrackerInterceptor : SaveChangesInterceptor
     /// <summary>
     /// Initializes a new instance of the <see cref="ChangeTrackerInterceptor"/> class.
     /// </summary>
-    /// <param name="serviceProvider">Root service provider used to resolve publisher or invalidator.</param>
+    /// <param name="serviceProvider">Root service provider used to resolve the eviction dispatcher.</param>
     public ChangeTrackerInterceptor(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -50,7 +49,7 @@ public class ChangeTrackerInterceptor : SaveChangesInterceptor
     /// <inheritdoc />
     public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
-        EvictOrPublish(eventData.Context, CancellationToken.None).GetAwaiter().GetResult();
+        DispatchEviction(eventData.Context, CancellationToken.None).GetAwaiter().GetResult();
         return base.SavedChanges(eventData, result);
     }
 
@@ -60,7 +59,7 @@ public class ChangeTrackerInterceptor : SaveChangesInterceptor
         int result,
         CancellationToken cancellationToken = default)
     {
-        await EvictOrPublish(eventData.Context, cancellationToken).ConfigureAwait(false);
+        await DispatchEviction(eventData.Context, cancellationToken).ConfigureAwait(false);
         return await base.SavedChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
     }
 
@@ -112,26 +111,15 @@ public class ChangeTrackerInterceptor : SaveChangesInterceptor
         return clrType.Name;
     }
 
-    private async Task EvictOrPublish(DbContext? context, CancellationToken cancellationToken)
+    private async Task DispatchEviction(DbContext? context, CancellationToken cancellationToken)
     {
         if (context is null || !PendingTags.TryRemove(context, out var tags) || tags.Length == 0)
             return;
 
         using var scope = _serviceProvider.CreateScope();
-        var services = scope.ServiceProvider;
-
-        var publisher = services.GetService<IRequestOutputCacheEvictionPublisher>();
-        if (publisher is not null)
-        {
-            await publisher.PublishAsync(
-                new RequestOutputCacheEvictionMessage { Tags = tags },
-                cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
-        var cacheInvalidator = services.GetRequiredService<IRequestOutputCacheInvalidator>();
-        var evictByTagsResult = await cacheInvalidator.EvictByTagsAsync(tags, cancellationToken).ConfigureAwait(false);
-        if (evictByTagsResult.IsFailed)
+        var dispatcher = scope.ServiceProvider.GetRequiredService<RequestOutputCacheEvictionDispatcher>();
+        var result = await dispatcher.DispatchAsync(tags, cancellationToken).ConfigureAwait(false);
+        if (result.IsFailed)
             throw new InvalidOperationException(ErrorMessages.UnableToEvictEntitiesOnDbSaveChange);
     }
 }

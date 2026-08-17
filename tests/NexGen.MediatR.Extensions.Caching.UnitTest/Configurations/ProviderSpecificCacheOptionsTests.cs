@@ -16,6 +16,73 @@ namespace NexGen.MediatR.Extensions.Caching.UnitTest.Configurations;
 public sealed class ProviderSpecificCacheOptionsTests
 {
     [Fact]
+    public void UseMemoryCache_DoesNotRegisterDistributedEvictionNotifier()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt => opt.UseMemoryCache());
+
+        Assert.DoesNotContain(services, d => d.ServiceType == typeof(IRequestOutputCacheEvictionNotifier));
+        Assert.DoesNotContain(services, d =>
+            d.ServiceType == typeof(Microsoft.Extensions.Hosting.IHostedService)
+            && d.ImplementationType is not null
+            && d.ImplementationType.Name.Contains("EvictionListener", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void UseRedisCache_RegistersDistributedEvictionByDefault()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt => opt.UseRedisCache("localhost:6379"));
+
+        Assert.Contains(services, d => d.ServiceType == typeof(IRequestOutputCacheEvictionNotifier));
+        Assert.Contains(services, d =>
+            d.ImplementationType?.Name == "RedisRequestOutputCacheEvictionListener");
+    }
+
+    [Fact]
+    public void UseRedisCache_CanDisableDistributedEviction()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt =>
+            opt.UseRedisCache(o =>
+            {
+                o.ConnectionString = "localhost:6379";
+                o.EnableDistributedEviction = false;
+            }));
+
+        Assert.DoesNotContain(services, d => d.ServiceType == typeof(IRequestOutputCacheEvictionNotifier));
+        Assert.DoesNotContain(services, d =>
+            d.ImplementationType?.Name == "RedisRequestOutputCacheEvictionListener");
+    }
+
+    [Fact]
+    public void UseGarnetCache_RegistersDistributedEvictionByDefault()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt => opt.UseGarnetCache("localhost:6379"));
+
+        Assert.Contains(services, d => d.ServiceType == typeof(IRequestOutputCacheEvictionNotifier));
+        Assert.Contains(services, d =>
+            d.ImplementationType?.Name == "GarnetRequestOutputCacheEvictionListener");
+    }
+
+    [Fact]
+    public void UseGarnetCache_CanDisableDistributedEviction()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt =>
+            opt.UseGarnetCache(o =>
+            {
+                o.ConnectionString = "localhost:6379";
+                o.EnableDistributedEviction = false;
+            }));
+
+        Assert.DoesNotContain(services, d => d.ServiceType == typeof(IRequestOutputCacheEvictionNotifier));
+        Assert.DoesNotContain(services, d =>
+            d.ImplementationType?.Name == "GarnetRequestOutputCacheEvictionListener");
+    }
+
+    [Fact]
     public void UseMemoryCache_WithDefaultExpiration_RegistersDefaults()
     {
         var services = new ServiceCollection();
