@@ -10,6 +10,12 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-08-17
+
+### Added
+
+- Core: on an ASP.NET Core cache hit, set `X-NexGen-Output-Cache: HIT` (on by default; disable with `EnableCacheHitResponseHeader(false)`) (#76).
+
 ## [2.1.0] - 2026-08-17
 
 ### Fixed
@@ -139,7 +145,8 @@ See the [Migrating from 1.x](README.md#migrating-from-1x) table in the README.
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.2.0
 [2.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.1.0
 [2.0.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.0.0
 [1.4.3]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.3

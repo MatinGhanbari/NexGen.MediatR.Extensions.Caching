@@ -184,6 +184,35 @@ public sealed class ProviderSpecificCacheOptionsTests
         Assert.Equal(15, cache.LastExpirationInSeconds);
     }
 
+    [Fact]
+    public void AddMediatROutputCache_EnablesCacheHitHeaderByDefault()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt => opt.UseMemoryCache());
+
+        using var provider = services.BuildServiceProvider();
+        var defaults = provider.GetRequiredService<RequestOutputCacheDefaults>();
+
+        Assert.True(defaults.EnableCacheHitResponseHeader);
+        Assert.Contains(services, d => d.ServiceType == typeof(Microsoft.AspNetCore.Http.IHttpContextAccessor));
+    }
+
+    [Fact]
+    public void EnableCacheHitResponseHeader_False_IsRegisteredOnDefaults()
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt =>
+        {
+            opt.UseMemoryCache();
+            opt.EnableCacheHitResponseHeader(false);
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var defaults = provider.GetRequiredService<RequestOutputCacheDefaults>();
+
+        Assert.False(defaults.EnableCacheHitResponseHeader);
+    }
+
     [RequestOutputCache(["tag"])]
     private sealed record CachedQuery(int Id) : IRequest<string>;
 

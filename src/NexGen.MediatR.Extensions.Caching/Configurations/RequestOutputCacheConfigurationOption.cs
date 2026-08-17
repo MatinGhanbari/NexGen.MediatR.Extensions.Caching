@@ -76,6 +76,18 @@ public class RequestOutputCacheConfigurationOption
     }
 
     /// <summary>
+    /// Controls whether a cache hit during an ASP.NET Core HTTP request sets
+    /// the <c>X-NexGen-Output-Cache: HIT</c> response header.
+    /// Enabled by default. Pass <see langword="false"/> to disable.
+    /// Non-HTTP MediatR executions are unchanged.
+    /// </summary>
+    /// <param name="enabled"><see langword="true"/> to set the header on cache hits; <see langword="false"/> to skip it.</param>
+    public void EnableCacheHitResponseHeader(bool enabled)
+    {
+        RequestOutputCacheDefaultsRegistration.Apply(Services, defaultExpirationInSeconds: null, enableCacheHitResponseHeader: enabled);
+    }
+
+    /// <summary>
     /// Clears all cached entries during application startup.
     /// </summary>
     public void ClearCacheOnStartup()
