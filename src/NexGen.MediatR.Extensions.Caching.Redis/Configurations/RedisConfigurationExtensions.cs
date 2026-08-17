@@ -1,10 +1,14 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
+using NexGen.MediatR.Extensions.Caching.Helpers;
 using NexGen.MediatR.Extensions.Caching.Redis.Containers;
+using NexGen.MediatR.Extensions.Caching.Redis.Eviction;
 using StackExchange.Redis;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis.Configurations;
@@ -16,6 +20,7 @@ public static class RedisConfigurationExtensions
 {
     /// <summary>
     /// Configures the library to use Redis cache for MediatR request responses.
+    /// Distributed tag eviction over Redis Pub/Sub is enabled by default.
     /// </summary>
     /// <param name="options">The output cache configuration options.</param>
     /// <param name="connectionString">The connection string for the Redis server.</param>
@@ -60,6 +65,12 @@ public static class RedisConfigurationExtensions
 
         RequestOutputCacheDefaultsRegistration.Apply(options.Services, redisOptions.DefaultExpirationInSeconds);
 
+        var multiplexer = new Lazy<IConnectionMultiplexer>(
+            () => CreateMultiplexer(redisOptions),
+            LazyThreadSafetyMode.ExecutionAndPublication);
+
+        options.Services.TryAddSingleton(_ => multiplexer.Value);
+
         options.Services.AddStackExchangeRedisCache(cacheOptions =>
         {
             ApplyDistributedCacheOptions(
@@ -68,11 +79,43 @@ public static class RedisConfigurationExtensions
                 redisOptions.InstanceName,
                 redisOptions.Database,
                 redisOptions.ConfigurationOptions);
+
+            cacheOptions.ConnectionMultiplexerFactory = () => Task.FromResult(multiplexer.Value);
         });
 
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RedisRequestOutputCache<,>));
         options.Services.AddScoped<IRequestOutputCacheInvalidator, RedisRequestOutputCache<IRequest<object>, object>>();
         options.Services.AddScoped<IRequestOutputCacheContainer, RedisOutputCacheContainer>();
+
+        if (!redisOptions.EnableDistributedEviction)
+            return;
+
+        var channel = RequestOutputCacheEvictionChannel.Resolve(redisOptions.InstanceName, redisOptions.EvictionChannel);
+        options.Services.TryAddSingleton(new RedisEvictionOptions { Channel = channel });
+        options.Services.TryAddSingleton<IRequestOutputCacheEvictionNotifier, RedisRequestOutputCacheEvictionNotifier>();
+        options.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, RedisRequestOutputCacheEvictionListener>());
+    }
+
+    internal static IConnectionMultiplexer CreateMultiplexer(RedisRequestOutputCacheOptions redisOptions)
+    {
+        if (redisOptions.ConfigurationOptions is not null)
+        {
+            var clone = redisOptions.ConfigurationOptions.Clone();
+            if (redisOptions.Database.HasValue)
+                clone.DefaultDatabase = redisOptions.Database;
+
+            return ConnectionMultiplexer.Connect(clone);
+        }
+
+        if (redisOptions.Database.HasValue)
+        {
+            var parsed = ConfigurationOptions.Parse(redisOptions.ConnectionString!);
+            parsed.DefaultDatabase = redisOptions.Database;
+            return ConnectionMultiplexer.Connect(parsed);
+        }
+
+        return ConnectionMultiplexer.Connect(redisOptions.ConnectionString!);
     }
 
     internal static void ApplyDistributedCacheOptions(
