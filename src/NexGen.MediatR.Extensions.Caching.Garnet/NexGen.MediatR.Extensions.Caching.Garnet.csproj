@@ -17,4 +17,8 @@
     <ProjectReference Include="..\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="NexGen.MediatR.Extensions.Caching.UnitTest" />
+  </ItemGroup>
+
 </Project>

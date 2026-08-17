@@ -1,29 +1,60 @@
 ﻿using FluentResults;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Redis.Constants;
+using StackExchange.Redis;
 using System.Collections.ObjectModel;
 
 namespace NexGen.MediatR.Extensions.Caching.Redis.Containers;
 
 public class RedisOutputCacheContainer : IRequestOutputCacheContainer
 {
-    private readonly IDistributedCache _cache;
+    private const int MaxIndexUpdateAttempts = 8;
 
+    private readonly IContainerIndexStore _index;
+
+    /// <summary>
+    /// Initializes a new instance that updates the container indexes through the distributed cache.
+    /// Concurrent writers sharing one instance can overwrite each other's index entries; prefer the
+    /// overload taking an <see cref="IConnectionMultiplexer"/> for multi-replica deployments.
+    /// </summary>
+    /// <param name="cache">The distributed cache holding the container indexes.</param>
     public RedisOutputCacheContainer(IDistributedCache cache)
+        : this(new DistributedCacheIndexStore(cache))
     {
-        _cache = cache;
+    }
+
+    /// <summary>
+    /// Initializes a new instance that merges the container indexes atomically, so replicas sharing
+    /// one Redis instance keep each other's index entries.
+    /// </summary>
+    /// <param name="cache">The distributed cache holding the container indexes.</param>
+    /// <param name="connectionMultiplexer">The connection used for compare-and-swap index writes.</param>
+    /// <param name="cacheOptions">The cache options providing the configured key prefix.</param>
+    public RedisOutputCacheContainer(
+        IDistributedCache cache,
+        IConnectionMultiplexer connectionMultiplexer,
+        IOptions<RedisCacheOptions> cacheOptions)
+        : this(CreateAtomicIndexStore(cache, connectionMultiplexer, cacheOptions))
+    {
+    }
+
+    internal RedisOutputCacheContainer(IContainerIndexStore index)
+    {
+        _index = index;
     }
 
     public async Task<Type?> GetResponseTypeAsync<TRequest>(CancellationToken cancellationToken = default)
     {
-        var response = await _cache.GetStringAsync(CacheKeys.RequestResponseTypesKey, cancellationToken).ConfigureAwait(false);
+        var response = await _index.ReadAsync(CacheKeys.RequestResponseTypesKey, cancellationToken).ConfigureAwait(false);
         if (response == null) return null;
 
         var requestResponseTypes = DeserializeStringMap(response);
-        var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
+        var requestTypeName = GetRequestTypeName<TRequest>();
 
         if (!TryResolveResponseTypeName(requestResponseTypes, requestTypeName, out var responseTypeName)
             || string.IsNullOrEmpty(responseTypeName))
@@ -36,25 +67,71 @@ public class RedisOutputCacheContainer : IRequestOutputCacheContainer
 
     public async Task<Result> UpdateContainerAsync<TRequest>(IEnumerable<string>? tags = null, string? cacheKey = null, Type? responseType = null, CancellationToken cancellationToken = default)
     {
+        var updateCacheTag = await AddOrUpdateCacheTag<TRequest>(tags, cancellationToken).ConfigureAwait(false);
+        var updateCacheType = await AddOrUpdateCacheType<TRequest>(cacheKey, cancellationToken).ConfigureAwait(false);
+
+        if (!updateCacheTag.IsSuccess || !updateCacheType.IsSuccess)
+            return Result.Fail(ErrorMessages.ContainerUpdatesFails);
+
+        if (responseType is null)
+            return Result.Ok();
+
+        return await AddOrUpdateResponseType<TRequest>(responseType, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ReadOnlyDictionary<string, HashSet<string>>> GetCacheTagsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _index.ReadAsync(CacheKeys.CacheTagsKey, cancellationToken).ConfigureAwait(false);
+        if (response == null) return new Dictionary<string, HashSet<string>>().AsReadOnly();
+
+        return DeserializeTagMap(response).AsReadOnly();
+    }
+
+    public async Task<ReadOnlyDictionary<string, HashSet<string?>>> GetCacheTypesAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _index.ReadAsync(CacheKeys.CacheTypesKey, cancellationToken).ConfigureAwait(false);
+        if (response == null) return new Dictionary<string, HashSet<string?>>().AsReadOnly();
+
+        return DeserializeTypeMap(response).AsReadOnly();
+    }
+
+    /// <inheritdoc />
+    public async Task<Result> RemoveRequestTypesAsync(
+        IEnumerable<string> requestTypeNames,
+        CancellationToken cancellationToken = default)
+    {
+        var requestTypes = requestTypeNames.ToHashSet(StringComparer.Ordinal);
+        if (requestTypes.Count == 0)
+            return Result.Ok();
+
+        var tagsResult = await MutateIndexAsync(
+            CacheKeys.CacheTagsKey,
+            current => RemoveFromTagMap(current, requestTypes),
+            cancellationToken).ConfigureAwait(false);
+        if (tagsResult.IsFailed)
+            return tagsResult;
+
+        var typesResult = await MutateIndexAsync(
+            CacheKeys.CacheTypesKey,
+            current => RemoveFromTypeMap(current, requestTypes),
+            cancellationToken).ConfigureAwait(false);
+        if (typesResult.IsFailed)
+            return typesResult;
+
+        return await MutateIndexAsync(
+            CacheKeys.RequestResponseTypesKey,
+            current => RemoveFromResponseTypeMap(current, requestTypes),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<Result> ClearAsync(CancellationToken cancellationToken = default)
+    {
         try
         {
-            var updateCacheTag = await AddOrUpdateCacheTag<TRequest>(tags, cancellationToken).ConfigureAwait(false);
-            var updateCacheType = await AddOrUpdateCacheType<TRequest>(cacheKey, cancellationToken).ConfigureAwait(false);
-
-            if (!updateCacheTag.IsSuccess || !updateCacheType.IsSuccess)
-                return Result.Fail(ErrorMessages.ContainerUpdatesFails);
-
-            if (responseType is not null)
-            {
-                var response = await _cache.GetStringAsync(CacheKeys.RequestResponseTypesKey, cancellationToken).ConfigureAwait(false);
-                var requestResponseTypes = DeserializeStringMap(response);
-                var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
-                requestResponseTypes[requestTypeName] = responseType.AssemblyQualifiedName ?? responseType.FullName ?? responseType.Name;
-                await _cache.SetStringAsync(
-                    CacheKeys.RequestResponseTypesKey,
-                    JsonConvert.SerializeObject(requestResponseTypes),
-                    cancellationToken).ConfigureAwait(false);
-            }
+            await _index.RemoveAsync(CacheKeys.CacheTagsKey, cancellationToken).ConfigureAwait(false);
+            await _index.RemoveAsync(CacheKeys.CacheTypesKey, cancellationToken).ConfigureAwait(false);
+            await _index.RemoveAsync(CacheKeys.RequestResponseTypesKey, cancellationToken).ConfigureAwait(false);
 
             return Result.Ok();
         }
@@ -64,39 +141,66 @@ public class RedisOutputCacheContainer : IRequestOutputCacheContainer
         }
     }
 
-    public async Task<ReadOnlyDictionary<string, HashSet<string>>> GetCacheTagsAsync(CancellationToken cancellationToken = default)
+    private static IContainerIndexStore CreateAtomicIndexStore(
+        IDistributedCache cache,
+        IConnectionMultiplexer connectionMultiplexer,
+        IOptions<RedisCacheOptions> cacheOptions)
     {
-        var response = await _cache.GetStringAsync(CacheKeys.CacheTagsKey, cancellationToken).ConfigureAwait(false);
-        if (response == null) return new Dictionary<string, HashSet<string>>().AsReadOnly();
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(connectionMultiplexer);
+        ArgumentNullException.ThrowIfNull(cacheOptions);
 
-        var cacheTags = (Dictionary<string, HashSet<string>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string>>))!;
-        return cacheTags.AsReadOnly();
+        return new RedisIndexStore(
+            connectionMultiplexer,
+            cacheOptions.Value.InstanceName,
+            new DistributedCacheIndexStore(cache));
     }
 
-    public async Task<ReadOnlyDictionary<string, HashSet<string?>>> GetCacheTypesAsync(CancellationToken cancellationToken = default)
-    {
-        var response = await _cache.GetStringAsync(CacheKeys.CacheTypesKey, cancellationToken).ConfigureAwait(false);
-        if (response == null) return new Dictionary<string, HashSet<string?>>().AsReadOnly();
-
-        var cacheTypes = (Dictionary<string, HashSet<string?>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string?>>))!;
-        return cacheTypes.AsReadOnly();
-    }
-
-    private async Task<Result> AddOrUpdateCacheTag<TRequest>(IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Reads an index document, applies <paramref name="merge"/> and writes it back, retrying while
+    /// concurrent writers keep replacing the document.
+    /// </summary>
+    private async Task<Result> MutateIndexAsync(
+        string key,
+        Func<string?, ContainerIndexUpdate> merge,
+        CancellationToken cancellationToken)
     {
         try
         {
-            if (tags == null)
-                return Result.Ok();
+            for (var attempt = 0; attempt < MaxIndexUpdateAttempts; attempt++)
+            {
+                var current = await _index.ReadAsync(key, cancellationToken).ConfigureAwait(false);
 
-            var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
-            var response = await _cache.GetStringAsync(CacheKeys.CacheTagsKey, cancellationToken).ConfigureAwait(false);
-            var cacheTags = response == null
-                ? new Dictionary<string, HashSet<string>>()
-                : (Dictionary<string, HashSet<string>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string>>))!;
+                var update = merge(current);
+                if (!update.Changed)
+                    return Result.Ok();
+
+                if (await _index.TryUpdateAsync(key, current, update.Value, cancellationToken).ConfigureAwait(false))
+                    return Result.Ok();
+            }
+
+            return Result.Fail(ErrorMessages.ContainerUpdatesFails);
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    private Task<Result> AddOrUpdateCacheTag<TRequest>(IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
+    {
+        if (tags == null)
+            return Task.FromResult(Result.Ok());
+
+        var tagNames = tags.ToArray();
+        var requestTypeName = GetRequestTypeName<TRequest>();
+
+        return MutateIndexAsync(CacheKeys.CacheTagsKey, current =>
+        {
+            var cacheTags = DeserializeTagMap(current);
 
             var changed = false;
-            foreach (var tag in tags)
+            foreach (var tag in tagNames)
             {
                 if (!cacheTags.TryGetValue(tag, out HashSet<string>? tagTypes) || tagTypes is null)
                 {
@@ -109,34 +213,22 @@ public class RedisOutputCacheContainer : IRequestOutputCacheContainer
                     changed = true;
             }
 
-            if (changed)
-            {
-                await _cache.SetStringAsync(
-                    CacheKeys.CacheTagsKey,
-                    JsonConvert.SerializeObject(cacheTags),
-                    cancellationToken).ConfigureAwait(false);
-            }
-
-            return Result.Ok();
-        }
-        catch (Exception exception)
-        {
-            return Result.Fail(exception.Message);
-        }
+            return changed
+                ? ContainerIndexUpdate.Write(JsonConvert.SerializeObject(cacheTags))
+                : ContainerIndexUpdate.Unchanged;
+        }, cancellationToken);
     }
 
-    private async Task<Result> AddOrUpdateCacheType<TRequest>(string? cacheKey = null, CancellationToken cancellationToken = default)
+    private Task<Result> AddOrUpdateCacheType<TRequest>(string? cacheKey = null, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            if (cacheKey == null)
-                return Result.Ok();
+        if (cacheKey == null)
+            return Task.FromResult(Result.Ok());
 
-            var requestTypeName = typeof(TRequest).FullName ?? typeof(TRequest).Name;
-            var response = await _cache.GetStringAsync(CacheKeys.CacheTypesKey, cancellationToken).ConfigureAwait(false);
-            var cacheTypes = response == null
-                ? new Dictionary<string, HashSet<string?>>()
-                : (Dictionary<string, HashSet<string?>>)JsonConvert.DeserializeObject(response, typeof(Dictionary<string, HashSet<string?>>))!;
+        var requestTypeName = GetRequestTypeName<TRequest>();
+
+        return MutateIndexAsync(CacheKeys.CacheTypesKey, current =>
+        {
+            var cacheTypes = DeserializeTypeMap(current);
 
             var changed = false;
             if (!cacheTypes.TryGetValue(requestTypeName, out HashSet<string?>? types) || types is null)
@@ -149,20 +241,119 @@ public class RedisOutputCacheContainer : IRequestOutputCacheContainer
             if (types.Add(cacheKey))
                 changed = true;
 
-            if (changed)
+            return changed
+                ? ContainerIndexUpdate.Write(JsonConvert.SerializeObject(cacheTypes))
+                : ContainerIndexUpdate.Unchanged;
+        }, cancellationToken);
+    }
+
+    private Task<Result> AddOrUpdateResponseType<TRequest>(Type responseType, CancellationToken cancellationToken)
+    {
+        var requestTypeName = GetRequestTypeName<TRequest>();
+        var responseTypeName = responseType.AssemblyQualifiedName ?? responseType.FullName ?? responseType.Name;
+
+        return MutateIndexAsync(CacheKeys.RequestResponseTypesKey, current =>
+        {
+            var requestResponseTypes = DeserializeStringMap(current);
+
+            if (requestResponseTypes.TryGetValue(requestTypeName, out var existing)
+                && string.Equals(existing, responseTypeName, StringComparison.Ordinal))
             {
-                await _cache.SetStringAsync(
-                    CacheKeys.CacheTypesKey,
-                    JsonConvert.SerializeObject(cacheTypes),
-                    cancellationToken).ConfigureAwait(false);
+                return ContainerIndexUpdate.Unchanged;
             }
 
-            return Result.Ok();
-        }
-        catch (Exception exception)
+            requestResponseTypes[requestTypeName] = responseTypeName;
+            return ContainerIndexUpdate.Write(JsonConvert.SerializeObject(requestResponseTypes));
+        }, cancellationToken);
+    }
+
+    private static ContainerIndexUpdate RemoveFromTagMap(string? current, HashSet<string> requestTypes)
+    {
+        var cacheTags = DeserializeTagMap(current);
+
+        var changed = false;
+        foreach (var tag in cacheTags.Keys.ToList())
         {
-            return Result.Fail(exception.Message);
+            var tagTypes = cacheTags[tag];
+            if (tagTypes is not null && tagTypes.RemoveWhere(requestTypes.Contains) > 0)
+                changed = true;
+
+            if (tagTypes is null || tagTypes.Count == 0)
+            {
+                cacheTags.Remove(tag);
+                changed = true;
+            }
         }
+
+        return Materialize(changed, cacheTags);
+    }
+
+    private static ContainerIndexUpdate RemoveFromTypeMap(string? current, HashSet<string> requestTypes)
+    {
+        var cacheTypes = DeserializeTypeMap(current);
+
+        var changed = false;
+        foreach (var requestType in requestTypes)
+        {
+            if (cacheTypes.Remove(requestType))
+                changed = true;
+        }
+
+        return Materialize(changed, cacheTypes);
+    }
+
+    private static ContainerIndexUpdate RemoveFromResponseTypeMap(string? current, HashSet<string> requestTypes)
+    {
+        var requestResponseTypes = DeserializeStringMap(current);
+
+        var changed = false;
+        foreach (var requestType in requestTypes)
+        {
+            if (requestResponseTypes.Remove(requestType))
+                changed = true;
+
+            foreach (var legacyKey in requestResponseTypes.Keys
+                .Where(key => key.StartsWith(requestType + ",", StringComparison.Ordinal))
+                .ToList())
+            {
+                requestResponseTypes.Remove(legacyKey);
+                changed = true;
+            }
+        }
+
+        return Materialize(changed, requestResponseTypes);
+    }
+
+    private static ContainerIndexUpdate Materialize<TMap>(bool changed, TMap map)
+        where TMap : System.Collections.ICollection
+    {
+        if (!changed)
+            return ContainerIndexUpdate.Unchanged;
+
+        return map.Count == 0
+            ? ContainerIndexUpdate.Delete
+            : ContainerIndexUpdate.Write(JsonConvert.SerializeObject(map));
+    }
+
+    private static string GetRequestTypeName<TRequest>() =>
+        typeof(TRequest).FullName ?? typeof(TRequest).Name;
+
+    private static Dictionary<string, HashSet<string>> DeserializeTagMap(string? json)
+    {
+        if (string.IsNullOrEmpty(json))
+            return new Dictionary<string, HashSet<string>>();
+
+        return JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(json)
+               ?? new Dictionary<string, HashSet<string>>();
+    }
+
+    private static Dictionary<string, HashSet<string?>> DeserializeTypeMap(string? json)
+    {
+        if (string.IsNullOrEmpty(json))
+            return new Dictionary<string, HashSet<string?>>();
+
+        return JsonConvert.DeserializeObject<Dictionary<string, HashSet<string?>>>(json)
+               ?? new Dictionary<string, HashSet<string?>>();
     }
 
     private static Dictionary<string, string> DeserializeStringMap(string? json)

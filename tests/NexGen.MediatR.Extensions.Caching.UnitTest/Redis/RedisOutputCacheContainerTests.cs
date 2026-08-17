@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -7,6 +6,7 @@ using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Helpers;
 using NexGen.MediatR.Extensions.Caching.Redis;
 using NexGen.MediatR.Extensions.Caching.Redis.Containers;
+using NexGen.MediatR.Extensions.Caching.UnitTest.Helpers;
 
 namespace NexGen.MediatR.Extensions.Caching.UnitTest.Redis;
 
@@ -18,8 +18,12 @@ public sealed class RedisOutputCacheContainerTests
     private static readonly string CacheTypesKey =
         RequestCacheConstants.CacheKeyRootPrefix + ":Container:CacheTypes";
 
+    private static readonly string CacheTagsKey =
+        RequestCacheConstants.CacheKeyRootPrefix + ":Container:CacheTags";
+
     private sealed record AppAQuery(int Id) : IRequest<string>;
     private sealed record AppBQuery(string Name) : IRequest<string>;
+    private sealed record AppCQuery(int Id) : IRequest<string>;
     private sealed record LocalQuery(int Id) : IRequest<string>;
 
     [Fact]
@@ -99,6 +103,55 @@ public sealed class RedisOutputCacheContainerTests
         Assert.True(cacheTypes.TryGetValue(requestTypeName, out var keys));
         Assert.Contains("key-first", keys!);
         Assert.Contains("key-second", keys!);
+    }
+
+    [Fact]
+    public async Task EvictByTags_RemovesEvictedRequestTypeFromAllIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var cache = CreateCache<LocalQuery>(store);
+        var query = new LocalQuery(11);
+
+        Assert.True((await cache.SetAsync(query, "payload", tags: ["User", "Admin"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await cache.EvictByTagsAsync(["User"])).IsSuccess);
+
+        var container = new RedisOutputCacheContainer(store);
+        Assert.Empty(await container.GetCacheTagsAsync());
+        Assert.Empty(await container.GetCacheTypesAsync());
+        Assert.Null(await container.GetResponseTypeAsync<LocalQuery>());
+        Assert.Null(await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(query)));
+        Assert.Null(await store.GetStringAsync(CacheTagsKey));
+        Assert.Null(await store.GetStringAsync(CacheTypesKey));
+        Assert.Null(await store.GetStringAsync(RequestResponseTypesKey));
+    }
+
+    [Fact]
+    public async Task EvictByTags_LeavesUnrelatedRequestTypeIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var userCache = CreateCache<AppAQuery>(store);
+        var orderCache = CreateCache<AppBQuery>(store);
+        var userQuery = new AppAQuery(1);
+        var orderQuery = new AppBQuery("x");
+
+        Assert.True((await userCache.SetAsync(userQuery, "a", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await orderCache.SetAsync(orderQuery, "b", tags: ["Order"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await userCache.EvictByTagsAsync(["User"])).IsSuccess);
+
+        var container = new RedisOutputCacheContainer(store);
+        var cacheTags = await container.GetCacheTagsAsync();
+        var cacheTypes = await container.GetCacheTypesAsync();
+
+        Assert.False(cacheTags.ContainsKey("User"));
+        Assert.True(cacheTags.ContainsKey("Order"));
+        Assert.DoesNotContain(typeof(AppAQuery).FullName!, cacheTypes.Keys);
+        Assert.Contains(typeof(AppBQuery).FullName!, cacheTypes.Keys);
+        Assert.Null(await container.GetResponseTypeAsync<AppAQuery>());
+        Assert.Equal(typeof(string), await container.GetResponseTypeAsync<AppBQuery>());
+        Assert.Null(await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(userQuery)));
+        Assert.Equal(
+            JsonConvert.SerializeObject("b"),
+            await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(orderQuery)));
     }
 
     [Fact]
@@ -211,6 +264,9 @@ public sealed class RedisOutputCacheContainerTests
 
         Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(aQuery)));
         Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(bQuery)));
+        Assert.Null(await shared.GetStringAsync(CacheTagsKey));
+        Assert.Null(await shared.GetStringAsync(CacheTypesKey));
+        Assert.Null(await shared.GetStringAsync(RequestResponseTypesKey));
     }
 
     [Fact]
@@ -273,27 +329,92 @@ public sealed class RedisOutputCacheContainerTests
     }
 
     [Fact]
-    public async Task Concurrent_UpdateContainer_LastWriteWins_CanDropPeerMetadata()
+    public async Task Concurrent_UpdateContainer_KeepsPeerMetadataInAllIndexes()
     {
-        var inner = new InMemoryDistributedCache();
-        var coordinated = new CoordinatedReadDistributedCache(inner, RequestResponseTypesKey, readersBeforeRelease: 2);
-        var containerA = new RedisOutputCacheContainer(coordinated);
-        var containerB = new RedisOutputCacheContainer(coordinated);
+        var store = new InMemoryDistributedCache();
+        var gate = new object();
+        var coordinated = new CoordinatedReadDistributedCache(
+            store,
+            readersBeforeRelease: 2,
+            CacheTagsKey,
+            CacheTypesKey,
+            RequestResponseTypesKey);
 
-        await Task.WhenAll(
+        var containerA = new RedisOutputCacheContainer(new RedisCompareAndSwapIndexStore(coordinated, store, gate));
+        var containerB = new RedisOutputCacheContainer(new RedisCompareAndSwapIndexStore(coordinated, store, gate));
+
+        var results = await Task.WhenAll(
             containerA.UpdateContainerAsync<AppAQuery>(tags: ["User"], cacheKey: "a-key", responseType: typeof(string)),
             containerB.UpdateContainerAsync<AppBQuery>(tags: ["Order"], cacheKey: "b-key", responseType: typeof(string)));
 
-        var typeMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-            (await inner.GetStringAsync(RequestResponseTypesKey))!)!;
+        Assert.All(results, result => Assert.True(result.IsSuccess));
 
-        var aPresent = typeMap.ContainsKey(typeof(AppAQuery).FullName!);
-        var bPresent = typeMap.ContainsKey(typeof(AppBQuery).FullName!);
+        var container = new RedisOutputCacheContainer(store);
 
-        // Documented production risk: without compare-and-swap, concurrent writers can drop peer entries.
-        Assert.False(aPresent && bPresent,
-            "Expected last-write-wins to drop one peer's response-type entry under coordinated concurrent reads.");
-        Assert.True(aPresent || bPresent);
+        var cacheTags = await container.GetCacheTagsAsync();
+        Assert.Contains(typeof(AppAQuery).FullName!, cacheTags["User"]);
+        Assert.Contains(typeof(AppBQuery).FullName!, cacheTags["Order"]);
+
+        var cacheTypes = await container.GetCacheTypesAsync();
+        Assert.Contains("a-key", cacheTypes[typeof(AppAQuery).FullName!]);
+        Assert.Contains("b-key", cacheTypes[typeof(AppBQuery).FullName!]);
+
+        Assert.Equal(typeof(string), await container.GetResponseTypeAsync<AppAQuery>());
+        Assert.Equal(typeof(string), await container.GetResponseTypeAsync<AppBQuery>());
+    }
+
+    [Fact]
+    public async Task ParallelWriters_KeepAllMetadata_AndEvictionClearsIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var gate = new object();
+        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async Task<bool> WriteAsync<TRequest>(string cacheKey)
+        {
+            var container = new RedisOutputCacheContainer(new RedisCompareAndSwapIndexStore(store, store, gate));
+            await start.Task;
+            var result = await container.UpdateContainerAsync<TRequest>(
+                tags: ["User"],
+                cacheKey: cacheKey,
+                responseType: typeof(string));
+            return result.IsSuccess;
+        }
+
+        var writers = new[]
+        {
+            WriteAsync<AppAQuery>("key-a"),
+            WriteAsync<AppBQuery>("key-b"),
+            WriteAsync<AppCQuery>("key-c"),
+            WriteAsync<LocalQuery>("key-d")
+        };
+
+        start.SetResult();
+        Assert.All(await Task.WhenAll(writers), Assert.True);
+
+        var container = new RedisOutputCacheContainer(store);
+        var requestTypeNames = new[]
+        {
+            typeof(AppAQuery).FullName!,
+            typeof(AppBQuery).FullName!,
+            typeof(AppCQuery).FullName!,
+            typeof(LocalQuery).FullName!
+        };
+
+        var cacheTags = await container.GetCacheTagsAsync();
+        var cacheTypes = await container.GetCacheTypesAsync();
+        foreach (var requestTypeName in requestTypeNames)
+        {
+            Assert.Contains(requestTypeName, cacheTags["User"]);
+            Assert.Contains(requestTypeName, cacheTypes.Keys);
+        }
+
+        var evicted = await CreateCache<AppAQuery>(store).EvictByTagsAsync(["User"]);
+        Assert.True(evicted.IsSuccess);
+
+        Assert.Empty(await container.GetCacheTagsAsync());
+        Assert.Empty(await container.GetCacheTypesAsync());
+        Assert.Null(await store.GetStringAsync(RequestResponseTypesKey));
     }
 
     private static RedisRequestOutputCache<TRequest, string> CreateCache<TRequest>(IDistributedCache store)
@@ -302,129 +423,4 @@ public sealed class RedisOutputCacheContainerTests
             NullLogger<RedisRequestOutputCache<TRequest, string>>.Instance,
             store,
             new RedisOutputCacheContainer(store));
-
-    private sealed class PrefixedDistributedCache : IDistributedCache
-    {
-        private readonly IDistributedCache _inner;
-        private readonly string _prefix;
-
-        public PrefixedDistributedCache(IDistributedCache inner, string prefix)
-        {
-            _inner = inner;
-            _prefix = prefix;
-        }
-
-        private string Key(string key) => _prefix + key;
-
-        public byte[]? Get(string key) => _inner.Get(Key(key));
-
-        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) =>
-            _inner.GetAsync(Key(key), token);
-
-        public void Refresh(string key) => _inner.Refresh(Key(key));
-
-        public Task RefreshAsync(string key, CancellationToken token = default) =>
-            _inner.RefreshAsync(Key(key), token);
-
-        public void Remove(string key) => _inner.Remove(Key(key));
-
-        public Task RemoveAsync(string key, CancellationToken token = default) =>
-            _inner.RemoveAsync(Key(key), token);
-
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) =>
-            _inner.Set(Key(key), value, options);
-
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) =>
-            _inner.SetAsync(Key(key), value, options, token);
-    }
-
-    /// <summary>
-    /// Holds GetAsync on a specific key until N readers have arrived, forcing a last-write-wins race.
-    /// </summary>
-    private sealed class CoordinatedReadDistributedCache : IDistributedCache
-    {
-        private readonly InMemoryDistributedCache _inner;
-        private readonly string _coordinateKey;
-        private readonly int _readersBeforeRelease;
-        private int _readersWaiting;
-        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public CoordinatedReadDistributedCache(
-            InMemoryDistributedCache inner,
-            string coordinateKey,
-            int readersBeforeRelease)
-        {
-            _inner = inner;
-            _coordinateKey = coordinateKey;
-            _readersBeforeRelease = readersBeforeRelease;
-        }
-
-        public byte[]? Get(string key) => _inner.Get(key);
-
-        public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
-        {
-            if (!string.Equals(key, _coordinateKey, StringComparison.Ordinal))
-                return await _inner.GetAsync(key, token).ConfigureAwait(false);
-
-            // Snapshot before release so both callers merge from the same pre-write view.
-            var snapshot = await _inner.GetAsync(key, token).ConfigureAwait(false);
-
-            if (Interlocked.Increment(ref _readersWaiting) >= _readersBeforeRelease)
-                _release.TrySetResult();
-
-            await _release.Task.WaitAsync(token).ConfigureAwait(false);
-            return snapshot;
-        }
-
-        public void Refresh(string key) => _inner.Refresh(key);
-
-        public Task RefreshAsync(string key, CancellationToken token = default) =>
-            _inner.RefreshAsync(key, token);
-
-        public void Remove(string key) => _inner.Remove(key);
-
-        public Task RemoveAsync(string key, CancellationToken token = default) =>
-            _inner.RemoveAsync(key, token);
-
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) =>
-            _inner.Set(key, value, options);
-
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) =>
-            _inner.SetAsync(key, value, options, token);
-    }
-
-    private sealed class InMemoryDistributedCache : IDistributedCache
-    {
-        private readonly ConcurrentDictionary<string, byte[]> _store = new();
-
-        public byte[]? Get(string key) =>
-            _store.TryGetValue(key, out var value) ? value : null;
-
-        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) =>
-            Task.FromResult(Get(key));
-
-        public void Refresh(string key)
-        {
-        }
-
-        public Task RefreshAsync(string key, CancellationToken token = default) =>
-            Task.CompletedTask;
-
-        public void Remove(string key) => _store.TryRemove(key, out _);
-
-        public Task RemoveAsync(string key, CancellationToken token = default)
-        {
-            Remove(key);
-            return Task.CompletedTask;
-        }
-
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) =>
-            _store[key] = value;
-
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
-        {
-            Set(key, value, options);
-            return Task.CompletedTask;
-        }
-    }
 }

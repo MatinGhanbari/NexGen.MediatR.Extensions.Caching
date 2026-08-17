@@ -10,9 +10,18 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-17
+
 ### Fixed
 
 - Memory / Redis / Garnet: remove sync-over-async (`.Result`) in tag eviction path (#51).
+- Memory / Redis / Garnet: prune container index metadata after tag eviction and `FlushAll` (#50).
+- Redis / Garnet: merge container index metadata with a server-side compare-and-swap, so concurrent writers sharing one instance no longer drop each other's entries (#49).
+
+### Added
+
+- Redis / Garnet: `RedisOutputCacheContainer` / `GarnetOutputCacheContainer` overloads taking an `IConnectionMultiplexer` and `IOptions<RedisCacheOptions>` for atomic index updates.
+- README: production checklist covering shared servers, `InstanceName` per service, and TTL as eviction fallback (#53 groundwork).
 
 ## [2.0.0] - 2026-08-17
 
@@ -130,7 +139,8 @@ See the [Migrating from 1.x](README.md#migrating-from-1x) table in the README.
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.1.0
 [2.0.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.0.0
 [1.4.3]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.3
 [1.4.2]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.2

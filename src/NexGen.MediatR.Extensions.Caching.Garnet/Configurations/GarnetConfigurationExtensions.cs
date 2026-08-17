@@ -1,7 +1,9 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
@@ -85,7 +87,10 @@ public static class GarnetConfigurationExtensions
 
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(GarnetRequestOutputCache<,>));
         options.Services.AddScoped<IRequestOutputCacheInvalidator, GarnetRequestOutputCache<IRequest<object>, object>>();
-        options.Services.AddScoped<IRequestOutputCacheContainer, GarnetOutputCacheContainer>();
+        options.Services.AddScoped<IRequestOutputCacheContainer>(provider => new GarnetOutputCacheContainer(
+            provider.GetRequiredService<IDistributedCache>(),
+            provider.GetRequiredService<IConnectionMultiplexer>(),
+            provider.GetRequiredService<IOptions<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions>>()));
 
         if (!garnetOptions.EnableDistributedEviction)
             return;

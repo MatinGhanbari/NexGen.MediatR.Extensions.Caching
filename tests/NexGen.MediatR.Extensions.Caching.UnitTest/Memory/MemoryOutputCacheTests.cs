@@ -44,6 +44,9 @@ public sealed class MemoryOutputCacheTests
         Assert.True((await cache.SetAsync(query, "value", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
         Assert.True((await cache.EvictByTagsAsync(["User"])).IsSuccess);
         Assert.True((await cache.GetAsync(query)).IsFailed);
+        Assert.Empty(container.CacheTags);
+        Assert.Empty(container.CacheTypes);
+        Assert.Empty(container.RequestResponseTypes);
     }
 
     [Fact]
@@ -65,6 +68,13 @@ public sealed class MemoryOutputCacheTests
         Assert.True((await userCache.GetAsync(userQuery)).IsFailed);
         Assert.True((await orderCache.GetAsync(orderQuery)).IsSuccess);
         Assert.Equal("order", (await orderCache.GetAsync(orderQuery)).Value);
+
+        Assert.False(container.CacheTags.ContainsKey("User"));
+        Assert.False(container.CacheTypes.ContainsKey(typeof(UserQuery).FullName!));
+        Assert.False(container.RequestResponseTypes.ContainsKey(typeof(UserQuery)));
+        Assert.True(container.CacheTags.ContainsKey("Order"));
+        Assert.True(container.CacheTypes.ContainsKey(typeof(OrderQuery).FullName!));
+        Assert.True(container.RequestResponseTypes.ContainsKey(typeof(OrderQuery)));
     }
 
     [Fact]
@@ -131,6 +141,9 @@ public sealed class MemoryOutputCacheTests
 
         Assert.True((await userCache.GetAsync(new UserQuery(1))).IsFailed);
         Assert.True((await orderCache.GetAsync(new OrderQuery(1))).IsFailed);
+        Assert.Empty(container.CacheTags);
+        Assert.Empty(container.CacheTypes);
+        Assert.Empty(container.RequestResponseTypes);
     }
 
     [Fact]

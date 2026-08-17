@@ -65,6 +65,55 @@ public class RequestOutputCacheContainer : IRequestOutputCacheContainer
         return CacheTypes.AsReadOnly();
     }
 
+    /// <inheritdoc />
+    public Task<Result> RemoveRequestTypesAsync(
+        IEnumerable<string> requestTypeNames,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var requestTypes = requestTypeNames.ToHashSet(StringComparer.Ordinal);
+            if (requestTypes.Count == 0)
+                return Task.FromResult(Result.Ok());
+
+            foreach (var requestType in requestTypes)
+            {
+                CacheTypes.Remove(requestType);
+
+                var responseType = RequestResponseTypes.Keys
+                    .FirstOrDefault(type => string.Equals(
+                        type.FullName ?? type.Name,
+                        requestType,
+                        StringComparison.Ordinal));
+                if (responseType is not null)
+                    RequestResponseTypes.Remove(responseType);
+            }
+
+            foreach (var tag in CacheTags.Keys.ToList())
+            {
+                CacheTags[tag].RemoveWhere(requestTypes.Contains);
+                if (CacheTags[tag].Count == 0)
+                    CacheTags.Remove(tag);
+            }
+
+            return Task.FromResult(Result.Ok());
+        }
+        catch (Exception exception)
+        {
+            return Task.FromResult(Result.Fail(exception.Message));
+        }
+    }
+
+    /// <inheritdoc />
+    public Task<Result> ClearAsync(CancellationToken cancellationToken = default)
+    {
+        CacheTypes.Clear();
+        CacheTags.Clear();
+        RequestResponseTypes.Clear();
+
+        return Task.FromResult(Result.Ok());
+    }
+
     private Result AddOrUpdateCacheTag<TRequest>(IEnumerable<string>? tags = null)
     {
         try
