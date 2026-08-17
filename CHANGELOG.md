@@ -14,6 +14,12 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 - Memory / Redis / Garnet: remove sync-over-async (`.Result`) in tag eviction path (#51).
 - Memory / Redis / Garnet: prune container index metadata after tag eviction and `FlushAll` (#50).
+- Redis / Garnet: merge container index metadata with a server-side compare-and-swap, so concurrent writers sharing one instance no longer drop each other's entries (#49).
+
+### Added
+
+- Redis / Garnet: `RedisOutputCacheContainer` / `GarnetOutputCacheContainer` overloads taking an `IConnectionMultiplexer` and `IOptions<RedisCacheOptions>` for atomic index updates.
+- README: production checklist covering shared servers, `InstanceName` per service, and TTL as eviction fallback (#53 groundwork).
 
 ## [2.0.0] - 2026-08-17
 

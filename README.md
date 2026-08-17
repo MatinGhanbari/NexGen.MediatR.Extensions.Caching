@@ -33,6 +33,7 @@
   - [Entity Framework auto-evict](#entity-framework-auto-evict)
   - [Distributed eviction (Redis / Garnet)](#distributed-eviction-redis--garnet)
   - [Clear cache on startup](#clear-cache-on-startup)
+- [Production checklist](#production-checklist)
 - [Caching requests](#caching-requests)
 - [Invalidation](#invalidation)
 - [How it works](#how-it-works)
@@ -193,7 +194,7 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
-> **Multiple apps on one Redis:** set a distinct `InstanceName` (and/or `Database`) per service. CLR namespaces in response cache keys do **not** isolate the shared container index keys (`…:Container:*`). Without a prefix, apps share that metadata on the same database.
+> **Multiple apps on one Redis:** set a distinct `InstanceName` (and/or `Database`) per service. CLR namespaces in response cache keys do **not** isolate the shared container index keys (`…:Container:*`). Without a prefix, apps share that metadata on the same database. Replicas of the *same* service intentionally share one prefix; their concurrent index updates are merged server-side, so they keep each other's entries.
 
 ### Garnet
 
@@ -262,6 +263,17 @@ builder.Services.AddMediatROutputCache(opt =>
     opt.ClearCacheOnStartup();
 });
 ```
+
+---
+
+## Production checklist
+
+- Use **Redis or Garnet**, not the in-memory provider, when more than one host serves the same queries.
+- Give **each service** a distinct `InstanceName` (and/or `Database`) on a shared server, so cache keys, the container indexes (`…:Container:*`), and the eviction channel do not collide with co-tenant apps.
+- **Replicas of one service keep the same `InstanceName`.** They share the container indexes on purpose: index updates are merged with a server-side compare-and-swap, so concurrent writers do not drop each other's entries. On a server without scripting support, index writes fall back to last-write-wins.
+- Keep an explicit **TTL** on `[RequestOutputCache]`. Redis and Garnet Pub/Sub eviction is at-most-once, and TTL is what repairs a missed message.
+- Align EF Core and command tags with entity **`nameof(Entity)`** strings.
+- **Flush the cache on deploy** when upgrading across cache key format versions.
 
 ---
 

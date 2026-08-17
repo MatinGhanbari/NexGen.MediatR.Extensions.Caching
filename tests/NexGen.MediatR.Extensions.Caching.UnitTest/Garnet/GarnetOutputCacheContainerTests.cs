@@ -27,6 +27,96 @@ public sealed class GarnetOutputCacheContainerTests
     private sealed record LocalQuery(int Id) : IRequest<string>;
     private sealed record AppAQuery(int Id) : IRequest<string>;
     private sealed record AppBQuery(string Name) : IRequest<string>;
+    private sealed record AppCQuery(int Id) : IRequest<string>;
+
+    [Fact]
+    public async Task Concurrent_UpdateContainer_KeepsPeerMetadataInAllIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var gate = new object();
+        var coordinated = new CoordinatedReadDistributedCache(
+            store,
+            readersBeforeRelease: 2,
+            CacheTagsKey,
+            CacheTypesKey,
+            RequestResponseTypesKey);
+
+        var containerA = new GarnetOutputCacheContainer(new GarnetCompareAndSwapIndexStore(coordinated, store, gate));
+        var containerB = new GarnetOutputCacheContainer(new GarnetCompareAndSwapIndexStore(coordinated, store, gate));
+
+        var results = await Task.WhenAll(
+            containerA.UpdateContainerAsync<AppAQuery>(tags: ["User"], cacheKey: "a-key", responseType: typeof(string)),
+            containerB.UpdateContainerAsync<AppBQuery>(tags: ["Order"], cacheKey: "b-key", responseType: typeof(string)));
+
+        Assert.All(results, result => Assert.True(result.IsSuccess));
+
+        var container = new GarnetOutputCacheContainer(store);
+
+        var cacheTags = await container.GetCacheTagsAsync();
+        Assert.Contains(typeof(AppAQuery).FullName!, cacheTags["User"]);
+        Assert.Contains(typeof(AppBQuery).FullName!, cacheTags["Order"]);
+
+        var cacheTypes = await container.GetCacheTypesAsync();
+        Assert.Contains("a-key", cacheTypes[typeof(AppAQuery).FullName!]);
+        Assert.Contains("b-key", cacheTypes[typeof(AppBQuery).FullName!]);
+
+        Assert.Equal(typeof(string), await container.GetResponseTypeAsync<AppAQuery>());
+        Assert.Equal(typeof(string), await container.GetResponseTypeAsync<AppBQuery>());
+    }
+
+    [Fact]
+    public async Task ParallelWriters_KeepAllMetadata_AndEvictionClearsIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var gate = new object();
+        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async Task<bool> WriteAsync<TRequest>(string cacheKey)
+        {
+            var container = new GarnetOutputCacheContainer(new GarnetCompareAndSwapIndexStore(store, store, gate));
+            await start.Task;
+            var result = await container.UpdateContainerAsync<TRequest>(
+                tags: ["User"],
+                cacheKey: cacheKey,
+                responseType: typeof(string));
+            return result.IsSuccess;
+        }
+
+        var writers = new[]
+        {
+            WriteAsync<AppAQuery>("key-a"),
+            WriteAsync<AppBQuery>("key-b"),
+            WriteAsync<AppCQuery>("key-c"),
+            WriteAsync<LocalQuery>("key-d")
+        };
+
+        start.SetResult();
+        Assert.All(await Task.WhenAll(writers), Assert.True);
+
+        var container = new GarnetOutputCacheContainer(store);
+        var requestTypeNames = new[]
+        {
+            typeof(AppAQuery).FullName!,
+            typeof(AppBQuery).FullName!,
+            typeof(AppCQuery).FullName!,
+            typeof(LocalQuery).FullName!
+        };
+
+        var cacheTags = await container.GetCacheTagsAsync();
+        var cacheTypes = await container.GetCacheTypesAsync();
+        foreach (var requestTypeName in requestTypeNames)
+        {
+            Assert.Contains(requestTypeName, cacheTags["User"]);
+            Assert.Contains(requestTypeName, cacheTypes.Keys);
+        }
+
+        var evicted = await CreateCache<AppAQuery>(store).EvictByTagsAsync(["User"]);
+        Assert.True(evicted.IsSuccess);
+
+        Assert.Empty(await container.GetCacheTagsAsync());
+        Assert.Empty(await container.GetCacheTypesAsync());
+        Assert.Null(await store.GetStringAsync(RequestResponseTypesKey));
+    }
 
     [Fact]
     public async Task SetAsync_WithForeignTypeEntries_StillWritesResponse()

@@ -1,7 +1,9 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Contracts;
@@ -85,7 +87,10 @@ public static class RedisConfigurationExtensions
 
         options.Services.AddScoped(typeof(IRequestOutputCache<,>), typeof(RedisRequestOutputCache<,>));
         options.Services.AddScoped<IRequestOutputCacheInvalidator, RedisRequestOutputCache<IRequest<object>, object>>();
-        options.Services.AddScoped<IRequestOutputCacheContainer, RedisOutputCacheContainer>();
+        options.Services.AddScoped<IRequestOutputCacheContainer>(provider => new RedisOutputCacheContainer(
+            provider.GetRequiredService<IDistributedCache>(),
+            provider.GetRequiredService<IConnectionMultiplexer>(),
+            provider.GetRequiredService<IOptions<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions>>()));
 
         if (!redisOptions.EnableDistributedEviction)
             return;
