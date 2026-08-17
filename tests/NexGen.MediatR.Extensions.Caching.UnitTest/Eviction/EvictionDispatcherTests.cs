@@ -101,6 +101,14 @@ public sealed class RequestOutputCacheEvictionDispatcherTests
             RequestOutputCacheEvictionChannel.Resolve("my-app:", null));
 
         Assert.Equal(
+            "my-app:NexGen.MediatR.Extensions.Caching:Evict",
+            RequestOutputCacheEvictionChannel.Resolve("my-app", null));
+
+        Assert.Equal(
+            "my-app:NexGen.MediatR.Extensions.Caching:Evict",
+            RequestOutputCacheEvictionChannel.Resolve("my-app::", null));
+
+        Assert.Equal(
             "my-app:custom",
             RequestOutputCacheEvictionChannel.Resolve("my-app", "custom"));
     }

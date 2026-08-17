@@ -10,6 +10,10 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+### Changed
+
+- Redis / Garnet: `InstanceName` is normalized so it always ends with exactly one trailing `:` (e.g. `my-app` → `my-app:`).
+
 ## [2.2.0] - 2026-08-17
 
 ### Added

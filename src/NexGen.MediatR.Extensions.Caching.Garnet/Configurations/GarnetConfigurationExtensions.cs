@@ -59,6 +59,7 @@ public static class GarnetConfigurationExtensions
 
         var garnetOptions = new GarnetRequestOutputCacheOptions();
         configure(garnetOptions);
+        garnetOptions.InstanceName = RequestOutputCacheInstanceNameNormalizer.Normalize(garnetOptions.InstanceName);
 
         if (garnetOptions.ConfigurationOptions is null && string.IsNullOrWhiteSpace(garnetOptions.ConnectionString))
             throw new ArgumentException(ErrorMessages.EmptyConnectionString, nameof(configure));
