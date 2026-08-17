@@ -11,10 +11,11 @@ public sealed class RedisRequestOutputCacheOptions
     /// Redis connection string. Required unless <see cref="ConfigurationOptions"/> is set.
     /// </summary>
     public string? ConnectionString { get; set; }
-
+ 
     /// <summary>
     /// Optional key prefix applied by <c>IDistributedCache</c> (<c>RedisCacheOptions.InstanceName</c>).
     /// When set, the eviction Pub/Sub channel is also prefixed so co-tenant apps do not cross-evict.
+    /// A trailing <c>:</c> is ensured automatically (e.g. <c>my-app</c> becomes <c>my-app:</c>).
     /// </summary>
     public string? InstanceName { get; set; }
 

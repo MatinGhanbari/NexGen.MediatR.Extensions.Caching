@@ -13,10 +13,7 @@ internal static class RequestOutputCacheEvictionChannel
             ? RequestCacheConstants.CacheKeyRootPrefix + ":Evict"
             : evictionChannel.Trim();
 
-        if (string.IsNullOrWhiteSpace(instanceName))
-            return channel;
-
-        var prefix = instanceName.Trim();
-        return prefix.EndsWith(':') ? prefix + channel : prefix + ":" + channel;
+        var prefix = RequestOutputCacheInstanceNameNormalizer.Normalize(instanceName);
+        return prefix is null ? channel : prefix + channel;
     }
 }

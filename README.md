@@ -196,7 +196,7 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
-> **Multiple apps on one Redis:** set a distinct `InstanceName` (and/or `Database`) per service. CLR namespaces in response cache keys do **not** isolate the shared container index keys (`…:Container:*`). Without a prefix, apps share that metadata on the same database. Replicas of the *same* service intentionally share one prefix; their concurrent index updates are merged server-side, so they keep each other's entries.
+> **Multiple apps on one Redis:** set a distinct `InstanceName` (and/or `Database`) per service. A trailing `:` is added automatically if omitted (`"my-app"` → `"my-app:"`). CLR namespaces in response cache keys do **not** isolate the shared container index keys (`…:Container:*`). Without a prefix, apps share that metadata on the same database. Replicas of the *same* service intentionally share one prefix; their concurrent index updates are merged server-side, so they keep each other's entries.
 
 ### Garnet
 
@@ -250,7 +250,7 @@ public sealed record CreateUserCommand(string Name) : IRequest<Result>;
 |---------|----------|
 | `EnableDistributedEviction` | Default **true**. Publishes and subscribes on a shared Redis/Garnet channel so other hosts evict the same tags. Set **false** to keep eviction in this process only. |
 | `EvictionChannel` | Optional. Defaults to `NexGen.MediatR.Extensions.Caching:Evict`, prefixed by `InstanceName` when set. |
-| `InstanceName` | Isolates cache keys **and** the eviction channel so co-tenant apps do not cross-evict. |
+| `InstanceName` | Isolates cache keys **and** the eviction channel so co-tenant apps do not cross-evict. Trailing `:` is ensured automatically. |
 
 The publishing host evicts locally first, then notifies others. Each host ignores its own Pub/Sub echo. Redis Pub/Sub is at-most-once; a missed message is repaired by TTL.
 

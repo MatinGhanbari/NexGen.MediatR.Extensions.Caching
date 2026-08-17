@@ -118,6 +118,47 @@ public sealed class ProviderSpecificCacheOptionsTests
         Assert.Equal(120, defaults.DefaultExpirationInSeconds);
     }
 
+    [Theory]
+    [InlineData("my-app", "my-app:")]
+    [InlineData("my-app:", "my-app:")]
+    [InlineData("my-app::", "my-app:")]
+    [InlineData("  my-app  ", "my-app:")]
+    public void UseRedisCache_NormalizesInstanceNameTrailingColon(string input, string expected)
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt =>
+            opt.UseRedisCache(o =>
+            {
+                o.ConnectionString = "localhost:6379";
+                o.InstanceName = input;
+            }));
+
+        using var provider = services.BuildServiceProvider();
+        var redisOptions = provider.GetRequiredService<IOptions<RedisCacheOptions>>().Value;
+
+        Assert.Equal(expected, redisOptions.InstanceName);
+    }
+
+    [Theory]
+    [InlineData("garnet", "garnet:")]
+    [InlineData("garnet:", "garnet:")]
+    [InlineData("garnet::", "garnet:")]
+    public void UseGarnetCache_NormalizesInstanceNameTrailingColon(string input, string expected)
+    {
+        var services = new ServiceCollection();
+        services.AddMediatROutputCache(opt =>
+            opt.UseGarnetCache(o =>
+            {
+                o.ConnectionString = "localhost:6379";
+                o.InstanceName = input;
+            }));
+
+        using var provider = services.BuildServiceProvider();
+        var redisOptions = provider.GetRequiredService<IOptions<RedisCacheOptions>>().Value;
+
+        Assert.Equal(expected, redisOptions.InstanceName);
+    }
+
     [Fact]
     public void UseGarnetCache_ActionOverload_AppliesInstanceNameAndDatabase()
     {

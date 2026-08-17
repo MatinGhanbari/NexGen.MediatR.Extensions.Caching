@@ -59,6 +59,7 @@ public static class RedisConfigurationExtensions
 
         var redisOptions = new RedisRequestOutputCacheOptions();
         configure(redisOptions);
+        redisOptions.InstanceName = RequestOutputCacheInstanceNameNormalizer.Normalize(redisOptions.InstanceName);
 
         if (redisOptions.ConfigurationOptions is null && string.IsNullOrWhiteSpace(redisOptions.ConnectionString))
             throw new ArgumentException(ErrorMessages.EmptyConnectionString, nameof(configure));
