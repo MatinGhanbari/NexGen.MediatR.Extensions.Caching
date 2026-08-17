@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>MatinGhanbari</Authors>
     <Copyright>© 2026 MatinGhanbari</Copyright>
-    <Version>2.2.0</Version>
-    <PackageReleaseNotes>Release v2.2.0 — Set X-NexGen-Output-Cache: HIT on ASP.NET Core cache hits (disable with EnableCacheHitResponseHeader(false))</PackageReleaseNotes>
+    <Version>2.2.1</Version>
+    <PackageReleaseNotes>Release v2.2.1 — feat: normalize Redis and Garnet InstanceName with trailing colon</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
