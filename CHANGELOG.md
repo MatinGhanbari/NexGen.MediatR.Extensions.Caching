@@ -10,6 +10,8 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-17
+
 ### Fixed
 
 - Memory / Redis / Garnet: remove sync-over-async (`.Result`) in tag eviction path (#51).
@@ -137,7 +139,8 @@ See the [Migrating from 1.x](README.md#migrating-from-1x) table in the README.
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.1.0
 [2.0.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.0.0
 [1.4.3]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.3
 [1.4.2]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.2
