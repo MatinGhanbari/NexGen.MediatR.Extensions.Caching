@@ -10,6 +10,34 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-17
+
+### Added
+
+- Native Redis and Garnet Pub/Sub eviction on a shared `IConnectionMultiplexer`.
+- `EnableDistributedEviction` (default `true`) and `EvictionChannel` on `RedisRequestOutputCacheOptions` / `GarnetRequestOutputCacheOptions`.
+- `RequestOutputCacheEvictionDispatcher`, `IRequestOutputCacheEvictionNotifier`, and `RequestOutputCacheEvictionNotification` (`Tags`, `SenderId`, `TimestampUnixMs`).
+- Tag normalization (trim, de-duplicate, drop empty) on `[RequestOutputCache]` and `[RequestOutputCacheEvict]`.
+- `[RequestOutputCacheEvict]` skips eviction when the handler returns a failed FluentResults `IResultBase`.
+
+### Changed
+
+- Query and command hosts use the same `AddMediatROutputCache` + `UseRedisCache` / `UseGarnetCache` registration.
+- EF Core `ChangeTrackerInterceptor` routes through the eviction dispatcher (local evict, then Pub/Sub when enabled).
+- Memory cache auto-evict and `[RequestOutputCacheEvict]` are process-local only.
+
+### Removed
+
+- `IRequestOutputCacheEvictionPublisher` / `IRequestOutputCacheEvictionSubscriber`
+- `RequestOutputCacheEvictionMessage`, `RequestOutputCacheEvictionHostedService`, `InProcessRequestOutputCacheEvictionBus`
+- `AddMediatROutputCacheEviction`, `UseInProcessEvictionBus`, `UseCustomEvictionPublisher` / `Subscriber` / `Bus`
+- `UseRedisEvictionBus`, `UseGarnetEvictionBus`
+- `RequestOutputCacheEvictionConstants.DefaultBusTopic`
+
+### Migration
+
+See the [Migrating from 1.x](README.md#migrating-from-1x) table in the README.
+
 ## [1.4.3] - 2026-08-11
 
 ### Fixed
@@ -34,16 +62,6 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 - Public constant `RequestCacheConstants.CacheKeyRootPrefix` documents the shared root.
 
 > **Migration:** existing in-memory / Redis / Garnet entries written with the old key format are not read by this version. Flush or wait for TTL before or after upgrading if you need a clean store.
-
-## [1.3.0] - 2026-08-10
-
-### Added
-
-- Provider-specific configuration overloads for cache registration:
-  - `UseMemoryCache(Action<MemoryRequestOutputCacheOptions>)`
-  - `UseRedisCache(Action<RedisRequestOutputCacheOptions>)` / `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`
-  - Optional `InstanceName`, `Database`, `ConfigurationOptions`, and `DefaultExpirationInSeconds`
-  - Existing string / parameterless overloads unchanged (delegate to the new APIs)
 
 ## [1.3.1] - 2026-08-11
 
@@ -108,9 +126,11 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.0.0
+[1.4.3]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.3
+[1.4.2]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.2
 [1.4.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.4.0
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v1.3.1...HEAD
 [1.3.1]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.3.1
 [1.3.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.3.0
 [1.2.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v1.2.0
