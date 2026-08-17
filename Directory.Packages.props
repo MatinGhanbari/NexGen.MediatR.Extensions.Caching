@@ -27,6 +27,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.20" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.20" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.20" />
 
     <!-- Integration sample -->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />

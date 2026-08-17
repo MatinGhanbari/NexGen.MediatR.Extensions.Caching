@@ -10,6 +10,10 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+### Fixed
+
+- Memory / Redis / Garnet: remove sync-over-async (`.Result`) in tag eviction path (#51).
+
 ## [2.0.0] - 2026-08-17
 
 ### Added

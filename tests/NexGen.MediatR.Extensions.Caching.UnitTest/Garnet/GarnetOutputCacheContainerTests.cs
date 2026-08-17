@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using NexGen.MediatR.Extensions.Caching.UnitTest.Helpers;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -100,45 +100,84 @@ public sealed class GarnetOutputCacheContainerTests
         Assert.Equal(typeof(string), resolved);
     }
 
+    [Fact]
+    public async Task TwoApps_DifferentInstanceName_ContainersAreIsolated()
+    {
+        var shared = new InMemoryDistributedCache();
+        var appAStore = new PrefixedDistributedCache(shared, "app-a:");
+        var appBStore = new PrefixedDistributedCache(shared, "app-b:");
+
+        var appA = CreateCache<AppAQuery>(appAStore);
+        var appB = CreateCache<AppBQuery>(appBStore);
+
+        Assert.True((await appA.SetAsync(new AppAQuery(1), "a", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await appB.SetAsync(new AppBQuery("x"), "b", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+
+        Assert.NotNull(await shared.GetStringAsync("app-a:" + RequestResponseTypesKey));
+        Assert.NotNull(await shared.GetStringAsync("app-b:" + RequestResponseTypesKey));
+        Assert.Null(await shared.GetStringAsync(RequestResponseTypesKey));
+    }
+
+    [Fact]
+    public async Task SharedTag_WithoutInstanceName_EvictAffectsBothApps()
+    {
+        var shared = new InMemoryDistributedCache();
+        var appA = CreateCache<AppAQuery>(shared);
+        var appB = CreateCache<AppBQuery>(shared);
+
+        var aQuery = new AppAQuery(1);
+        var bQuery = new AppBQuery("x");
+        Assert.True((await appA.SetAsync(aQuery, "a", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await appB.SetAsync(bQuery, "b", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+
+        Assert.True((await appA.EvictByTagsAsync(["User"])).IsSuccess);
+
+        Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(aQuery)));
+        Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(bQuery)));
+    }
+
+    [Fact]
+    public async Task SharedTag_WithInstanceName_EvictIsIsolated()
+    {
+        var shared = new InMemoryDistributedCache();
+        var appAStore = new PrefixedDistributedCache(shared, "app-a:");
+        var appBStore = new PrefixedDistributedCache(shared, "app-b:");
+        var appA = CreateCache<AppAQuery>(appAStore);
+        var appB = CreateCache<AppBQuery>(appBStore);
+
+        var aQuery = new AppAQuery(1);
+        var bQuery = new AppBQuery("x");
+        Assert.True((await appA.SetAsync(aQuery, "a", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await appB.SetAsync(bQuery, "b", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+
+        Assert.True((await appA.EvictByTagsAsync(["User"])).IsSuccess);
+
+        Assert.Null(await appAStore.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(aQuery)));
+        Assert.Equal(
+            JsonConvert.SerializeObject("b"),
+            await appBStore.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(bQuery)));
+    }
+
+    [Fact]
+    public async Task FlushAll_WithoutInstanceName_RemovesOtherAppEntries()
+    {
+        var shared = new InMemoryDistributedCache();
+        var appA = CreateCache<AppAQuery>(shared);
+        var appB = CreateCache<AppBQuery>(shared);
+
+        Assert.True((await appA.SetAsync(new AppAQuery(1), "a", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await appB.SetAsync(new AppBQuery("x"), "b", tags: ["Order"], expirationInSeconds: 60)).IsSuccess);
+
+        Assert.True((await appA.FlushAll()).IsSuccess);
+
+        Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(new AppAQuery(1))));
+        Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(new AppBQuery("x"))));
+    }
+
     private static GarnetRequestOutputCache<TRequest, string> CreateCache<TRequest>(IDistributedCache store)
         where TRequest : IRequest<string> =>
         new(
             NullLogger<GarnetRequestOutputCache<TRequest, string>>.Instance,
             store,
             new GarnetOutputCacheContainer(store));
-
-    private sealed class InMemoryDistributedCache : IDistributedCache
-    {
-        private readonly ConcurrentDictionary<string, byte[]> _store = new();
-
-        public byte[]? Get(string key) =>
-            _store.TryGetValue(key, out var value) ? value : null;
-
-        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) =>
-            Task.FromResult(Get(key));
-
-        public void Refresh(string key)
-        {
-        }
-
-        public Task RefreshAsync(string key, CancellationToken token = default) =>
-            Task.CompletedTask;
-
-        public void Remove(string key) => _store.TryRemove(key, out _);
-
-        public Task RemoveAsync(string key, CancellationToken token = default)
-        {
-            Remove(key);
-            return Task.CompletedTask;
-        }
-
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) =>
-            _store[key] = value;
-
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
-        {
-            Set(key, value, options);
-            return Task.CompletedTask;
-        }
-    }
 }

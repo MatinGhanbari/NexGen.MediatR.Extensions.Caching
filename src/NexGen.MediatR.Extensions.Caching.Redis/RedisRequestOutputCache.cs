@@ -95,13 +95,15 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
     {
         try
         {
+            var cacheTags = await _cacheContainer.GetCacheTagsAsync(cancellationToken).ConfigureAwait(false);
+
             foreach (var tag in tags)
             {
-                if (!_cacheContainer.GetCacheTagsAsync(cancellationToken).Result.TryGetValue(tag, out HashSet<string>? tagTypes))
+                if (!cacheTags.TryGetValue(tag, out HashSet<string>? tagTypes))
                     continue;
 
                 tagTypes ??= [];
-                await EvictTypesAsync(tagTypes, cancellationToken);
+                await EvictTypesAsync(tagTypes, cancellationToken).ConfigureAwait(false);
             }
 
             return Result.Ok();
@@ -146,12 +148,14 @@ public sealed class RedisRequestOutputCache<TRequest, TResponse>
     /// <returns>A successful <see cref="Result"/> when eviction completes.</returns>
     private async Task<Result> EvictTypesAsync(HashSet<string> tagTypes, CancellationToken cancellationToken = default)
     {
+        var cacheTypes = await _cacheContainer.GetCacheTypesAsync(cancellationToken).ConfigureAwait(false);
+
         foreach (var tagType in tagTypes)
         {
-            if (!_cacheContainer.GetCacheTypesAsync(cancellationToken).Result.TryGetValue(tagType, out HashSet<string?>? cacheTypes) || cacheTypes is null)
+            if (!cacheTypes.TryGetValue(tagType, out HashSet<string?>? types) || types is null)
                 continue;
 
-            foreach (var cacheType in cacheTypes)
+            foreach (var cacheType in types)
             {
                 if (cacheType is not null)
                     await _cache.RemoveAsync(cacheType, cancellationToken);
