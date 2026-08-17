@@ -1,17 +1,19 @@
 ﻿using NexGen.MediatR.Extensions.Caching.Constants;
+using NexGen.MediatR.Extensions.Caching.Helpers;
 
 namespace NexGen.MediatR.Extensions.Caching.Attributes;
 
 /// <summary>
-/// Specifies that the response of a MediatR request should be cached.
-/// Apply this attribute to a request handler class to enable automatic output caching.
+/// Marks a MediatR request so its handler response is cached.
+/// Apply this attribute to the request type (the class that implements <c>IRequest&lt;TResponse&gt;</c>).
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 public class RequestOutputCacheAttribute : Attribute
 {
     /// <summary>
     /// Gets the cache tags associated with this request.
-    /// Tags can be used to group related cache entries and support cache invalidation.
+    /// Tags group related cache entries and are used for invalidation.
+    /// Empty and duplicate values are removed; remaining tags are trimmed.
     /// </summary>
     public string[] Tags { get; }
 
@@ -26,7 +28,7 @@ public class RequestOutputCacheAttribute : Attribute
     /// Initializes a new instance of the <see cref="RequestOutputCacheAttribute"/> class.
     /// </summary>
     /// <param name="tags">
-    /// An array of tags to associate with the cache entry. Used for grouping and invalidation.
+    /// Tags to associate with the cache entry. Used for grouping and invalidation.
     /// </param>
     /// <param name="expirationInSeconds">
     /// The cache lifetime in seconds. Optional. Set it Zero to never expire cache. Defaults to <see cref="RequestCacheConstants.DefaultExpirationInSeconds"/>.
@@ -34,7 +36,7 @@ public class RequestOutputCacheAttribute : Attribute
     /// </param>
     public RequestOutputCacheAttribute(string[] tags, int expirationInSeconds = RequestCacheConstants.DefaultExpirationInSeconds)
     {
-        Tags = tags;
+        Tags = RequestOutputCacheTagNormalizer.Normalize(tags);
         ExpirationInSeconds = expirationInSeconds;
     }
 }

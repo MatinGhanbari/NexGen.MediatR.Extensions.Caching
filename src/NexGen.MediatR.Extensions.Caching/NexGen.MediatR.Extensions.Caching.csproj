@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="NexGen.MediatR.Extensions.Caching.Redis" />
+    <InternalsVisibleTo Include="NexGen.MediatR.Extensions.Caching.Garnet" />
+    <InternalsVisibleTo Include="NexGen.MediatR.Extensions.Caching.UnitTest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MediatR" />
     <PackageReference Include="FluentResults" />
     <PackageReference Include="Newtonsoft.Json" />

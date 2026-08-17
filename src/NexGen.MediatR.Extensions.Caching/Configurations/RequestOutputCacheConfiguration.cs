@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NexGen.MediatR.Extensions.Caching.Behaviors;
+using NexGen.MediatR.Extensions.Caching.Eviction;
 
 namespace NexGen.MediatR.Extensions.Caching.Configurations;
 
@@ -9,16 +11,15 @@ namespace NexGen.MediatR.Extensions.Caching.Configurations;
 /// </summary>
 public static class RequestOutputCacheConfiguration
 {
-    
     /// <summary>
     /// Adds MediatR output caching services to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add caching to.</param>
     /// <param name="action">
-    /// An action to configure <see cref="IServiceCollection"/> 
+    /// An action to configure <see cref="RequestOutputCacheConfigurationOption"/>
     /// (e.g., registering a cache provider or configuring options).
     /// </param>
-    /// <returns>The updated <see cref="RequestOutputCacheConfigurationOption"/>.</returns>
+    /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddMediatROutputCache(this IServiceCollection services, Action<RequestOutputCacheConfigurationOption> action)
     {
         var options = new RequestOutputCacheConfigurationOption(services);
@@ -35,6 +36,8 @@ public static class RequestOutputCacheConfiguration
     private static IServiceCollection AddMediatROutputCache(this IServiceCollection services)
     {
         RequestOutputCacheDefaultsRegistration.Apply(services, defaultExpirationInSeconds: null);
+        services.TryAddSingleton<RequestOutputCacheEvictionNode>();
+        services.AddScoped<RequestOutputCacheEvictionDispatcher>();
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestOutputCacheBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestOutputCacheEvictBehavior<,>));
         return services;
