@@ -4,18 +4,17 @@ using Microsoft.Extensions.DependencyInjection;
 using NexGen.MediatR.Extensions.Caching.Configurations;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.EntityFramework;
-using NexGen.MediatR.Extensions.Caching.Messages;
 
 namespace NexGen.MediatR.Extensions.Caching.UnitTest.EntityFramework;
 
 public sealed class ChangeTrackerInterceptorTests
 {
     [Fact]
-    public async Task SavedChangesAsync_AddedEntity_PublishesEntityNameTag()
+    public async Task SavedChangesAsync_AddedEntity_NotifiesEntityNameTag()
     {
         var published = new List<string[]>();
-        var publisher = new CapturingPublisher(published);
-        await using var provider = BuildProvider(publisher: publisher);
+        var notifier = new CapturingNotifier(published);
+        await using var provider = BuildProvider(notifier);
 
         await using var scope = provider.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<TestDbContext>();
@@ -30,8 +29,8 @@ public sealed class ChangeTrackerInterceptorTests
     public async Task SavedChangesAsync_ModifiedAndDeleted_CollectDistinctEntityTags()
     {
         var published = new List<string[]>();
-        var publisher = new CapturingPublisher(published);
-        await using var provider = BuildProvider(publisher: publisher);
+        var notifier = new CapturingNotifier(published);
+        await using var provider = BuildProvider(notifier);
 
         await using var scope = provider.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<TestDbContext>();
@@ -53,9 +52,9 @@ public sealed class ChangeTrackerInterceptorTests
     }
 
     [Fact]
-    public async Task SavedChangesAsync_WithoutPublisher_EvictsViaLocalInvalidator()
+    public async Task SavedChangesAsync_WithoutNotifier_EvictsViaLocalInvalidator()
     {
-        await using var provider = BuildProvider(publisher: null, registerCache: true);
+        await using var provider = BuildProvider(notifier: null);
 
         await using var scope = provider.CreateAsyncScope();
         var sp = scope.ServiceProvider;
@@ -71,11 +70,11 @@ public sealed class ChangeTrackerInterceptorTests
     }
 
     [Fact]
-    public async Task SaveChangesFailed_DoesNotPublishOrEvict()
+    public async Task SaveChangesFailed_DoesNotNotifyOrEvict()
     {
         var published = new List<string[]>();
-        var publisher = new CapturingPublisher(published);
-        await using var provider = BuildProvider(publisher: publisher, registerCache: true);
+        var notifier = new CapturingNotifier(published);
+        await using var provider = BuildProvider(notifier);
 
         await using var scope = provider.CreateAsyncScope();
         var sp = scope.ServiceProvider;
@@ -93,18 +92,14 @@ public sealed class ChangeTrackerInterceptorTests
         Assert.Equal("cached", (await cache.GetAsync(new CachedUserQuery(1))).Value);
     }
 
-    private static ServiceProvider BuildProvider(
-        CapturingPublisher? publisher,
-        bool registerCache = false)
+    private static ServiceProvider BuildProvider(CapturingNotifier? notifier)
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddMediatROutputCache(opt => opt.UseMemoryCache());
 
-        if (registerCache)
-            services.AddMediatROutputCache(opt => opt.UseMemoryCache());
-
-        if (publisher is not null)
-            services.AddSingleton<IRequestOutputCacheEvictionPublisher>(publisher);
+        if (notifier is not null)
+            services.AddSingleton<IRequestOutputCacheEvictionNotifier>(notifier);
 
         services.AddDbContext<TestDbContext>((sp, options) =>
         {
@@ -115,11 +110,11 @@ public sealed class ChangeTrackerInterceptorTests
         return services.BuildServiceProvider();
     }
 
-    private sealed class CapturingPublisher(List<string[]> sink) : IRequestOutputCacheEvictionPublisher
+    private sealed class CapturingNotifier(List<string[]> sink) : IRequestOutputCacheEvictionNotifier
     {
-        public Task PublishAsync(RequestOutputCacheEvictionMessage message, CancellationToken cancellationToken = default)
+        public Task NotifyAsync(IReadOnlyCollection<string> tags, CancellationToken cancellationToken = default)
         {
-            sink.Add(message.Tags);
+            sink.Add(tags as string[] ?? tags.ToArray());
             return Task.CompletedTask;
         }
     }

@@ -31,7 +31,7 @@
   - [Redis](#redis)
   - [Garnet](#garnet)
   - [Entity Framework auto-evict](#entity-framework-auto-evict)
-  - [CQRS / dual DI eviction bus](#cqrs--dual-di-eviction-bus)
+  - [Distributed eviction (Redis / Garnet)](#distributed-eviction-redis--garnet)
   - [Clear cache on startup](#clear-cache-on-startup)
 - [Caching requests](#caching-requests)
 - [Invalidation](#invalidation)
@@ -48,7 +48,7 @@
 
 `NexGen.MediatR.Extensions.Caching` extends [MediatR](https://github.com/jbogard/MediatR) with **opt-in response caching** as a cross-cutting concern. Mark a request with `[RequestOutputCache]`, and a pipeline behavior serves cached responses on hits and stores results on misses.
 
-Invalidation is **tag-based**: associate tags with cached requests, then evict by tag manually or automatically when Entity Framework Core saves related entity changes. Providers include in-memory, Redis, and Garnet so the same API works for single-node and distributed / microservice scenarios.
+Invalidation is **tag-based**: associate tags with cached requests, then evict by tag with `[RequestOutputCacheEvict]`, manually, or automatically when Entity Framework Core saves related entity changes. In-memory cache is local to one process. Redis and Garnet add Pub/Sub so other hosts sharing the same cache prefix drop the same tags.
 
 ---
 
@@ -62,10 +62,10 @@ Invalidation is **tag-based**: associate tags with cached requests, then evict b
 | **In-memory provider** | Built into the core package using `IMemoryCache` for local and development scenarios. |
 | **Redis provider** | Distributed cache via `IDistributedCache` + StackExchange.Redis (`NexGen.MediatR.Extensions.Caching.Redis`). |
 | **Garnet provider** | Distributed Garnet-compatible provider mirrored with Redis (`NexGen.MediatR.Extensions.Caching.Garnet`). |
-| **Tag-based invalidation** | Group related cache entries with tags and evict with `EvictByTagsAsync`. |
+| **Tag-based invalidation** | Group related cache entries with tags and evict with `EvictByTagsAsync` or `[RequestOutputCacheEvict]`. |
 | **EF Core auto-evict** | On `SaveChanges` / `SaveChangesAsync`, evict tags matching changed entity type **names** (`UseMediatROutputCacheAutoEvict`). |
-| **CQRS eviction bus** | Cross-DI / split-host invalidation via in-process bus, Redis/Garnet Pub/Sub, or custom Rabbit/Kafka/MassTransit adapters. |
-| **Command eviction attribute** | `[RequestOutputCacheEvict]` publishes or evicts tags after a successful command. |
+| **Redis / Garnet Pub/Sub** | Distributed tag eviction across CQRS hosts and microservices (on by default; set `EnableDistributedEviction = false` to opt out). |
+| **Command eviction attribute** | `[RequestOutputCacheEvict(tag1, tag2, ...)]` invalidates those tags after a successful handler. |
 | **Deterministic cache keys** | Key = `NexGen.MediatR.Extensions:{Namespace:segments}:{TypeName}:{SHA-256(JSON)}` — namespaced, Redis-tree friendly, collision-safe across namespaces. |
 | **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. Provider `DefaultExpirationInSeconds` can replace the library default when the attribute omits an explicit value. |
 | **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
@@ -158,6 +158,8 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
+In-memory cache is **process-local**. `[RequestOutputCacheEvict]` and EF auto-evict run only in this host. Cross-service or split CQRS invalidation is not supported with the memory provider — use Redis or Garnet for that.
+
 Optional provider defaults (applied when the attribute omits an explicit `expirationInSeconds`, i.e. uses the library constant **300**):
 
 ```csharp
@@ -205,9 +207,10 @@ builder.Services.AddMediatROutputCache(opt =>
 Same nested options pattern as Redis via `UseGarnetCache(Action<GarnetRequestOutputCacheOptions>)`. Use a distinct `InstanceName` / `Database` when multiple apps share one Garnet instance (same guidance as Redis above).
 
 > **TTL precedence:** an explicit `expirationInSeconds` on `[RequestOutputCache]` always wins (including `0` for never expire). Provider `DefaultExpirationInSeconds` only replaces the library default when the attribute uses the constructor default (**300**). Explicit `300` is indistinguishable from that default.
+
 ### Entity Framework auto-evict
 
-After a successful `SaveChanges` / `SaveChangesAsync`, the interceptor collects distinct entity CLR type **names** and calls `EvictByTagsAsync` with those names. Request tags must match (typically `nameof(YourEntity)`).
+After a successful `SaveChanges` / `SaveChangesAsync`, the interceptor collects distinct entity CLR type **names** and invalidates those tags. Request tags must match (typically `nameof(YourEntity)`). With Redis or Garnet, the same tags are also published on Pub/Sub when distributed eviction is enabled.
 
 ```csharp
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
@@ -217,84 +220,38 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 });
 ```
 
-### CQRS / dual DI eviction bus
+### Distributed eviction (Redis / Garnet)
 
-When command and query run in **separate DI containers** (same process or separate services), the command host publishes eviction messages and the query host applies them.
-
-Message contract: `RequestOutputCacheEvictionMessage` with `Tags`. Suggested topic for external buses: `mediatr.outputcache.evict` (`RequestOutputCacheEvictionConstants.DefaultBusTopic`).
-
-#### Existing Rabbit / Kafka / MassTransit bus
-
-The library does **not** take a dependency on your broker. Implement thin adapters:
+Query and command hosts use the **same** registration. No second DI entry point and no message bus.
 
 ```csharp
-// Command host
-public sealed class MassTransitEvictionPublisher(IBus bus) : IRequestOutputCacheEvictionPublisher
-{
-    public Task PublishAsync(RequestOutputCacheEvictionMessage message, CancellationToken ct)
-        => bus.Publish(message, ct); // or send to topic mediatr.outputcache.evict
-}
-
-services.AddMediatROutputCacheEviction(opt =>
-    opt.UseCustomEvictionPublisher<MassTransitEvictionPublisher>());
-
-writeDb.UseMediatROutputCacheAutoEvict(sp);
-
-// Query host — either a library subscriber...
-public sealed class MassTransitEvictionSubscriber : IRequestOutputCacheEvictionSubscriber
-{
-    // SubscribeAsync: consume from your queue/topic and invoke the handler callback
-}
-
-services.AddMediatROutputCache(opt =>
-{
-    opt.UseMemoryCache();
-    opt.UseCustomEvictionSubscriber<MassTransitEvictionSubscriber>();
-});
-
-// ...or call EvictByTagsAsync from an existing consumer:
-public sealed class EvictionConsumer(IRequestOutputCacheInvalidator cache)
-{
-    public Task Consume(RequestOutputCacheEvictionMessage message, CancellationToken ct)
-        => cache.EvictByTagsAsync(message.Tags, ct);
-}
+// every host
+builder.Services.AddMediatROutputCache(opt =>
+    opt.UseRedisCache(o =>
+    {
+        o.ConnectionString = builder.Configuration.GetConnectionString("Redis")!;
+        o.InstanceName = "my-app:";
+        // o.EnableDistributedEviction = true; // default
+    }));
 ```
-
-#### Redis Pub/Sub (no other bus)
 
 ```csharp
-// Query
-services.AddMediatROutputCache(opt =>
-{
-    opt.UseMemoryCache();
-    opt.UseRedisEvictionBus(redisConnectionString);
-});
+[RequestOutputCache(tags: [nameof(User)], expirationInSeconds: 300)]
+public sealed record GetUsersQuery : IRequest<Result<List<UserDto>>>;
 
-// Command
-services.AddMediatROutputCacheEviction(opt =>
-    opt.UseRedisEvictionBus(redisConnectionString));
+[RequestOutputCacheEvict(nameof(User), nameof(Order), "dashboard-stats")]
+public sealed record CreateUserCommand(string Name) : IRequest<Result>;
 ```
 
-(`UseGarnetEvictionBus` mirrors the same API.)
+| Setting | Behavior |
+|---------|----------|
+| `EnableDistributedEviction` | Default **true**. Publishes and subscribes on a shared Redis/Garnet channel so other hosts evict the same tags. Set **false** to keep eviction in this process only. |
+| `EvictionChannel` | Optional. Defaults to `NexGen.MediatR.Extensions.Caching:Evict`, prefixed by `InstanceName` when set. |
+| `InstanceName` | Isolates cache keys **and** the eviction channel so co-tenant apps do not cross-evict. |
 
-#### Co-deployed dual DI (in-process)
+The publishing host evicts locally first, then notifies others. Each host ignores its own Pub/Sub echo. Redis Pub/Sub is at-most-once; a missed message is repaired by TTL.
 
-```csharp
-var bus = new InProcessRequestOutputCacheEvictionBus();
-
-queryServices.AddMediatROutputCache(opt =>
-{
-    opt.UseMemoryCache();
-    opt.UseInProcessEvictionBus(bus);
-});
-
-commandServices.AddMediatROutputCacheEviction(opt =>
-    opt.UseInProcessEvictionBus(bus));
-```
-
-With EF auto-evict on the command `DbContext`, changed entity type names are published on the bus after a successful save. Query tags must still use `nameof(Entity)`.
-
-For commands without EF, decorate the request with `[RequestOutputCacheEvict(nameof(User))]`.
+`UseGarnetCache` mirrors the same options (`EnableDistributedEviction`, `EvictionChannel`, `InstanceName`).
 
 ### Clear cache on startup
 
@@ -363,13 +320,15 @@ await cache.FlushAll(cancellationToken);
 
 ### Automatic (EF Core)
 
-When `UseMediatROutputCacheAutoEvict` is configured, you usually do not need manual eviction for data that changes through that `DbContext`. If an eviction publisher is registered (CQRS bus), the interceptor **publishes** tags instead of calling the local invalidator.
+When `UseMediatROutputCacheAutoEvict` is configured, you usually do not need manual eviction for data that changes through that `DbContext`. With Redis or Garnet, the interceptor also notifies other hosts when distributed eviction is enabled.
 
 ### Command attribute
 
+Eviction runs only after the handler returns successfully. A thrown exception or a failed FluentResults `IResultBase` skips eviction. Pass any number of tags; they are sent in one call.
+
 ```csharp
-[RequestOutputCacheEvict(nameof(User))]
-public sealed record CreateUserCommand(string Name) : IRequest<Unit>;
+[RequestOutputCacheEvict(nameof(User), nameof(Order), "dashboard-stats")]
+public sealed record CreateUserCommand(string Name) : IRequest<Result>;
 ```
 
 ---
@@ -382,11 +341,14 @@ public sealed record CreateUserCommand(string Name) : IRequest<Unit>;
                               ├─ hit  → return cached TResponse
                               └─ miss → handler → store → return TResponse
 
+[RequestOutputCacheEvict] → handler succeeds → RequestOutputCacheEvictionDispatcher
+                              ├─ local EvictByTagsAsync
+                              └─ Redis/Garnet Pub/Sub (when enabled) → other hosts EvictByTagsAsync
+
 Key:   NexGen.MediatR.Extensions:{Namespace:with:colons}:{TypeName}:{sha256(json(request))}
 Index: tag → request types → cache keys  (via IRequestOutputCacheContainer)
 Evict: EvictByTagsAsync(tags)
        or EF ChangeTracker → entity type Name as tags
-       or eviction bus (in-process / Redis / Garnet / custom) → query host EvictByTagsAsync
 ```
 
 Distributed providers (Redis / Garnet) also keep request→response type metadata so payloads can be deserialized correctly across nodes.
@@ -421,8 +383,13 @@ public sealed class WeatherForecastRequestHandler
 ### Invalidate after an update
 
 ```csharp
+[RequestOutputCacheEvict("weather")]
 public sealed class WeatherForecastUpdateRequest : IRequest<string>;
+```
 
+Or call the invalidator from a handler:
+
+```csharp
 public sealed class WeatherForecastUpdateRequestHandler(
     IRequestOutputCacheInvalidator cache)
     : IRequestHandler<WeatherForecastUpdateRequest, string>
@@ -450,6 +417,22 @@ public sealed class WeatherForecastUpdateRequestHandler(
 ![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
 
 > Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads.
+
+---
+
+## Migrating from 1.x
+
+Version **2.0.0** removes the eviction-bus APIs. Use attributes plus one `AddMediatROutputCache` call.
+
+| 1.x | 2.0 |
+|-----|-----|
+| `AddMediatROutputCacheEviction` | `AddMediatROutputCache` + `UseRedisCache` / `UseGarnetCache` on every host |
+| `UseRedisEvictionBus` / `UseGarnetEvictionBus` | Built into `UseRedisCache` / `UseGarnetCache` (`EnableDistributedEviction`, default `true`) |
+| `UseInProcessEvictionBus` / `InProcessRequestOutputCacheEvictionBus` | Removed. Memory cache is process-local only |
+| `UseCustomEvictionPublisher` / `Subscriber` / `Bus` | Removed. Use Redis or Garnet Pub/Sub |
+| `IRequestOutputCacheEvictionPublisher` / `Subscriber` | `IRequestOutputCacheEvictionNotifier` (provider-internal) + `RequestOutputCacheEvictionDispatcher` |
+| `RequestOutputCacheEvictionMessage` | `RequestOutputCacheEvictionNotification` |
+| `[RequestOutputCacheEvict]` after any handler return | Evicts only on success (no exception, FluentResults not failed) |
 
 ---
 
