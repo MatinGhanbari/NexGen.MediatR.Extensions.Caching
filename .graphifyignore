@@ -1,0 +1,11 @@
+# Extra exclusions for the local code knowledge graph.
+# .gitignore is honored automatically; these patterns only narrow the corpus further.
+
+bin/
+obj/
+.nuget-packages/
+assets/
+TestResults/
+artifacts/
+BenchmarkDotNet.Artifacts/
+graphify-out/
