@@ -18,6 +18,9 @@ public sealed class RedisOutputCacheContainerTests
     private static readonly string CacheTypesKey =
         RequestCacheConstants.CacheKeyRootPrefix + ":Container:CacheTypes";
 
+    private static readonly string CacheTagsKey =
+        RequestCacheConstants.CacheKeyRootPrefix + ":Container:CacheTags";
+
     private sealed record AppAQuery(int Id) : IRequest<string>;
     private sealed record AppBQuery(string Name) : IRequest<string>;
     private sealed record LocalQuery(int Id) : IRequest<string>;
@@ -99,6 +102,55 @@ public sealed class RedisOutputCacheContainerTests
         Assert.True(cacheTypes.TryGetValue(requestTypeName, out var keys));
         Assert.Contains("key-first", keys!);
         Assert.Contains("key-second", keys!);
+    }
+
+    [Fact]
+    public async Task EvictByTags_RemovesEvictedRequestTypeFromAllIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var cache = CreateCache<LocalQuery>(store);
+        var query = new LocalQuery(11);
+
+        Assert.True((await cache.SetAsync(query, "payload", tags: ["User", "Admin"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await cache.EvictByTagsAsync(["User"])).IsSuccess);
+
+        var container = new RedisOutputCacheContainer(store);
+        Assert.Empty(await container.GetCacheTagsAsync());
+        Assert.Empty(await container.GetCacheTypesAsync());
+        Assert.Null(await container.GetResponseTypeAsync<LocalQuery>());
+        Assert.Null(await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(query)));
+        Assert.Null(await store.GetStringAsync(CacheTagsKey));
+        Assert.Null(await store.GetStringAsync(CacheTypesKey));
+        Assert.Null(await store.GetStringAsync(RequestResponseTypesKey));
+    }
+
+    [Fact]
+    public async Task EvictByTags_LeavesUnrelatedRequestTypeIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var userCache = CreateCache<AppAQuery>(store);
+        var orderCache = CreateCache<AppBQuery>(store);
+        var userQuery = new AppAQuery(1);
+        var orderQuery = new AppBQuery("x");
+
+        Assert.True((await userCache.SetAsync(userQuery, "a", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await orderCache.SetAsync(orderQuery, "b", tags: ["Order"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await userCache.EvictByTagsAsync(["User"])).IsSuccess);
+
+        var container = new RedisOutputCacheContainer(store);
+        var cacheTags = await container.GetCacheTagsAsync();
+        var cacheTypes = await container.GetCacheTypesAsync();
+
+        Assert.False(cacheTags.ContainsKey("User"));
+        Assert.True(cacheTags.ContainsKey("Order"));
+        Assert.DoesNotContain(typeof(AppAQuery).FullName!, cacheTypes.Keys);
+        Assert.Contains(typeof(AppBQuery).FullName!, cacheTypes.Keys);
+        Assert.Null(await container.GetResponseTypeAsync<AppAQuery>());
+        Assert.Equal(typeof(string), await container.GetResponseTypeAsync<AppBQuery>());
+        Assert.Null(await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(userQuery)));
+        Assert.Equal(
+            JsonConvert.SerializeObject("b"),
+            await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(orderQuery)));
     }
 
     [Fact]
@@ -211,6 +263,9 @@ public sealed class RedisOutputCacheContainerTests
 
         Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(aQuery)));
         Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(bQuery)));
+        Assert.Null(await shared.GetStringAsync(CacheTagsKey));
+        Assert.Null(await shared.GetStringAsync(CacheTypesKey));
+        Assert.Null(await shared.GetStringAsync(RequestResponseTypesKey));
     }
 
     [Fact]

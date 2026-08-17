@@ -21,6 +21,9 @@ public sealed class GarnetOutputCacheContainerTests
     private static readonly string CacheTypesKey =
         RequestCacheConstants.CacheKeyRootPrefix + ":Container:CacheTypes";
 
+    private static readonly string CacheTagsKey =
+        RequestCacheConstants.CacheKeyRootPrefix + ":Container:CacheTags";
+
     private sealed record LocalQuery(int Id) : IRequest<string>;
     private sealed record AppAQuery(int Id) : IRequest<string>;
     private sealed record AppBQuery(string Name) : IRequest<string>;
@@ -68,6 +71,42 @@ public sealed class GarnetOutputCacheContainerTests
         var keys = cacheTypes[typeof(LocalQuery).FullName!];
         Assert.Contains("key-first", keys);
         Assert.Contains("key-second", keys);
+    }
+
+    [Fact]
+    public async Task EvictByTags_RemovesEvictedRequestTypeFromAllIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var cache = CreateCache<LocalQuery>(store);
+        var query = new LocalQuery(11);
+
+        Assert.True((await cache.SetAsync(query, "payload", tags: ["User", "Admin"], expirationInSeconds: 60)).IsSuccess);
+        Assert.True((await cache.EvictByTagsAsync(["User"])).IsSuccess);
+
+        var container = new GarnetOutputCacheContainer(store);
+        Assert.Empty(await container.GetCacheTagsAsync());
+        Assert.Empty(await container.GetCacheTypesAsync());
+        Assert.Null(await container.GetResponseTypeAsync<LocalQuery>());
+        Assert.Null(await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(query)));
+        Assert.Null(await store.GetStringAsync(CacheTagsKey));
+        Assert.Null(await store.GetStringAsync(CacheTypesKey));
+        Assert.Null(await store.GetStringAsync(RequestResponseTypesKey));
+    }
+
+    [Fact]
+    public async Task FlushAll_RemovesValuesAndIndexes()
+    {
+        var store = new InMemoryDistributedCache();
+        var cache = CreateCache<LocalQuery>(store);
+        var query = new LocalQuery(12);
+        Assert.True((await cache.SetAsync(query, "payload", tags: ["User"], expirationInSeconds: 60)).IsSuccess);
+
+        Assert.True((await cache.FlushAll()).IsSuccess);
+
+        Assert.Null(await store.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(query)));
+        Assert.Null(await store.GetStringAsync(CacheTagsKey));
+        Assert.Null(await store.GetStringAsync(CacheTypesKey));
+        Assert.Null(await store.GetStringAsync(RequestResponseTypesKey));
     }
 
     [Fact]
@@ -172,6 +211,9 @@ public sealed class GarnetOutputCacheContainerTests
 
         Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(new AppAQuery(1))));
         Assert.Null(await shared.GetStringAsync(RequestOutputCacheHelper.GetCacheKey(new AppBQuery("x"))));
+        Assert.Null(await shared.GetStringAsync(CacheTagsKey));
+        Assert.Null(await shared.GetStringAsync(CacheTypesKey));
+        Assert.Null(await shared.GetStringAsync(RequestResponseTypesKey));
     }
 
     private static GarnetRequestOutputCache<TRequest, string> CreateCache<TRequest>(IDistributedCache store)

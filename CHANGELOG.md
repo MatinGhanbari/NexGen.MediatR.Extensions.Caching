@@ -13,6 +13,7 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 ### Fixed
 
 - Memory / Redis / Garnet: remove sync-over-async (`.Result`) in tag eviction path (#51).
+- Memory / Redis / Garnet: prune container index metadata after tag eviction and `FlushAll` (#50).
 
 ## [2.0.0] - 2026-08-17
 

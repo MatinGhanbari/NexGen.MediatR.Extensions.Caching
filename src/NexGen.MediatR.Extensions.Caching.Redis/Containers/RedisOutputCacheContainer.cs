@@ -82,6 +82,85 @@ public class RedisOutputCacheContainer : IRequestOutputCacheContainer
         return cacheTypes.AsReadOnly();
     }
 
+    /// <inheritdoc />
+    public async Task<Result> RemoveRequestTypesAsync(
+        IEnumerable<string> requestTypeNames,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var requestTypes = requestTypeNames.ToHashSet(StringComparer.Ordinal);
+            if (requestTypes.Count == 0)
+                return Result.Ok();
+
+            var cacheTags = (await GetCacheTagsAsync(cancellationToken).ConfigureAwait(false))
+                .ToDictionary(entry => entry.Key, entry => new HashSet<string>(entry.Value));
+            var cacheTypes = (await GetCacheTypesAsync(cancellationToken).ConfigureAwait(false))
+                .ToDictionary(entry => entry.Key, entry => new HashSet<string?>(entry.Value));
+            var response = await _cache.GetStringAsync(CacheKeys.RequestResponseTypesKey, cancellationToken).ConfigureAwait(false);
+            var requestResponseTypes = DeserializeStringMap(response);
+
+            foreach (var requestType in requestTypes)
+            {
+                cacheTypes.Remove(requestType);
+                requestResponseTypes.Remove(requestType);
+
+                foreach (var legacyKey in requestResponseTypes.Keys
+                    .Where(key => key.StartsWith(requestType + ",", StringComparison.Ordinal))
+                    .ToList())
+                {
+                    requestResponseTypes.Remove(legacyKey);
+                }
+            }
+
+            foreach (var tag in cacheTags.Keys.ToList())
+            {
+                cacheTags[tag].RemoveWhere(requestTypes.Contains);
+                if (cacheTags[tag].Count == 0)
+                    cacheTags.Remove(tag);
+            }
+
+            await PersistIndexAsync(CacheKeys.CacheTagsKey, cacheTags, cancellationToken).ConfigureAwait(false);
+            await PersistIndexAsync(CacheKeys.CacheTypesKey, cacheTypes, cancellationToken).ConfigureAwait(false);
+            await PersistIndexAsync(CacheKeys.RequestResponseTypesKey, requestResponseTypes, cancellationToken).ConfigureAwait(false);
+
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Result> ClearAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _cache.RemoveAsync(CacheKeys.CacheTagsKey, cancellationToken).ConfigureAwait(false);
+            await _cache.RemoveAsync(CacheKeys.CacheTypesKey, cancellationToken).ConfigureAwait(false);
+            await _cache.RemoveAsync(CacheKeys.RequestResponseTypesKey, cancellationToken).ConfigureAwait(false);
+
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    private async Task PersistIndexAsync<TMap>(string key, TMap map, CancellationToken cancellationToken)
+        where TMap : System.Collections.ICollection
+    {
+        if (map.Count == 0)
+        {
+            await _cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        await _cache.SetStringAsync(key, JsonConvert.SerializeObject(map), cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<Result> AddOrUpdateCacheTag<TRequest>(IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         try

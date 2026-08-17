@@ -97,7 +97,13 @@ public sealed class RequestOutputCache<TRequest, TResponse>
                     continue;
 
                 tagTypes ??= [];
-                await EvictTypesAsync(tagTypes, cancellationToken).ConfigureAwait(false);
+                var evictionResult = await EvictTypesAsync(tagTypes, cancellationToken).ConfigureAwait(false);
+                if (evictionResult.IsFailed)
+                    return evictionResult;
+
+                var pruneResult = await _cacheContainer.RemoveRequestTypesAsync(tagTypes, cancellationToken).ConfigureAwait(false);
+                if (pruneResult.IsFailed)
+                    return pruneResult;
             }
 
             return Result.Ok();
@@ -113,19 +119,17 @@ public sealed class RequestOutputCache<TRequest, TResponse>
     {
         try
         {
-            var cacheTags = await _cacheContainer.GetCacheTagsAsync(cancellationToken);
+            var cacheTypes = await _cacheContainer.GetCacheTypesAsync(cancellationToken).ConfigureAwait(false);
+            var allTypes = cacheTypes.Keys.ToHashSet();
 
-            var allTypes = cacheTags.Values
-                .Where(v => v != null)
-                .SelectMany(v => v!)
-                .ToHashSet();
+            if (allTypes.Count > 0)
+            {
+                var evictionResult = await EvictTypesAsync(allTypes, cancellationToken).ConfigureAwait(false);
+                if (evictionResult.IsFailed)
+                    return evictionResult;
+            }
 
-            if (!allTypes.Any())
-                return Result.Ok();
-
-            await EvictTypesAsync(allTypes, cancellationToken);
-
-            return Result.Ok();
+            return await _cacheContainer.ClearAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
