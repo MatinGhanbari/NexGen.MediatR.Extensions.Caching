@@ -20,4 +20,14 @@ public sealed class RequestOutputCacheDefaults
     /// <see cref="RequestOutputCacheConfigurationOption.EnableCacheHitResponseHeader"/>.
     /// </summary>
     public bool EnableCacheHitResponseHeader { get; set; } = true;
+
+    /// <summary>
+    /// When <see langword="true"/>, unsuccessful handler responses are cached
+    /// (FluentResults failures and types whose <c>IsSuccess</c> property is <see langword="false"/>).
+    /// Defaults to <see langword="false"/>. A predicate registered with
+    /// <see cref="RequestOutputCacheConfigurationOption.CacheWhen{TRequest, TResponse}(Func{TResponse, bool})"/>
+    /// always takes priority. Enable with
+    /// <see cref="RequestOutputCacheConfigurationOption.CacheUnsuccessfulResponses"/>.
+    /// </summary>
+    public bool CacheUnsuccessfulResponses { get; set; }
 }

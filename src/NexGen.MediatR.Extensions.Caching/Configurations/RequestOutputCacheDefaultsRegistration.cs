@@ -30,6 +30,25 @@ public static class RequestOutputCacheDefaultsRegistration
         IServiceCollection services,
         int? defaultExpirationInSeconds,
         bool? enableCacheHitResponseHeader)
+        => Apply(services, defaultExpirationInSeconds, enableCacheHitResponseHeader, cacheUnsuccessfulResponses: null);
+
+    /// <summary>
+    /// Ensures a <see cref="RequestOutputCacheDefaults"/> singleton is available, and applies
+    /// provider defaults when provided.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="defaultExpirationInSeconds">Optional provider-level default expiration.</param>
+    /// <param name="enableCacheHitResponseHeader">
+    /// Optional override for <see cref="RequestOutputCacheDefaults.EnableCacheHitResponseHeader"/>.
+    /// </param>
+    /// <param name="cacheUnsuccessfulResponses">
+    /// Optional override for <see cref="RequestOutputCacheDefaults.CacheUnsuccessfulResponses"/>.
+    /// </param>
+    public static void Apply(
+        IServiceCollection services,
+        int? defaultExpirationInSeconds,
+        bool? enableCacheHitResponseHeader,
+        bool? cacheUnsuccessfulResponses)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -40,13 +59,16 @@ public static class RequestOutputCacheDefaultsRegistration
                 instance.DefaultExpirationInSeconds = defaultExpirationInSeconds;
             if (enableCacheHitResponseHeader.HasValue)
                 instance.EnableCacheHitResponseHeader = enableCacheHitResponseHeader.Value;
+            if (cacheUnsuccessfulResponses.HasValue)
+                instance.CacheUnsuccessfulResponses = cacheUnsuccessfulResponses.Value;
             return;
         }
 
         services.TryAddSingleton(new RequestOutputCacheDefaults
         {
             DefaultExpirationInSeconds = defaultExpirationInSeconds,
-            EnableCacheHitResponseHeader = enableCacheHitResponseHeader ?? true
+            EnableCacheHitResponseHeader = enableCacheHitResponseHeader ?? true,
+            CacheUnsuccessfulResponses = cacheUnsuccessfulResponses ?? false
         });
     }
 }
