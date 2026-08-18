@@ -89,7 +89,11 @@ Describe the use case, how it fits the current opt-in / tag-based model, and whe
 
 ## Code of conduct
 
-Be respectful and constructive in issues and reviews. Harassment or abusive behavior is not acceptable.
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
+
+## Security
+
+Do not open a public issue for vulnerabilities. Follow **[SECURITY.md](SECURITY.md)** and report privately via GitHub Security Advisories.
 
 ## License
 
