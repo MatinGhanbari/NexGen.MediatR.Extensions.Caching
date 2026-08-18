@@ -1,0 +1,81 @@
+name: Bug report
+description: Report unexpected behavior in the caching libraries
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please search [existing issues](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/issues) first.
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      description: Lockstep version of the NexGen.MediatR.Extensions.Caching packages
+      placeholder: "2.2.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: packages
+    attributes:
+      label: Affected package(s)
+      multiple: true
+      options:
+        - NexGen.MediatR.Extensions.Caching (core / memory)
+        - NexGen.MediatR.Extensions.Caching.Redis
+        - NexGen.MediatR.Extensions.Caching.Garnet
+        - NexGen.MediatR.Extensions.Caching.EntityFramework
+    validations:
+      required: true
+  - type: dropdown
+    id: tfm
+    attributes:
+      label: Target framework
+      options:
+        - net8.0
+        - net9.0
+        - net10.0
+        - Multiple
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Cache provider
+      options:
+        - Memory
+        - Redis
+        - Garnet
+    validations:
+      required: true
+  - type: dropdown
+    id: ef-auto-evict
+    attributes:
+      label: EF Core auto-evict enabled?
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal code or steps that reproduce the issue
+      placeholder: |
+        1. Register AddMediatROutputCache with …
+        2. Send a request decorated with [RequestOutputCache] …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Logs, exception messages, or related configuration (redact secrets)

@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an enhancement to the caching libraries
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search [existing issues](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/issues) first, and read [CONTRIBUTING.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CONTRIBUTING.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to do that the current API does not cover well?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should this work? Prefer additive APIs over breaking changes.
+    validations:
+      required: true
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Would this be a breaking change for existing consumers?
+      options:
+        - Additive (new optional API / behavior)
+        - Breaking (requires a major version)
+        - Unsure
+    validations:
+      required: true
+  - type: checkboxes
+    id: model
+    attributes:
+      label: Fits the current model?
+      options:
+        - label: Opt-in via `[RequestOutputCache]` (unmarked requests stay uncached)
+        - label: Tag-based invalidation
+        - label: Redis and Garnet stay feature-parity (if a provider is involved)
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you tried or considered
