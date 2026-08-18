@@ -34,14 +34,17 @@
   - [Distributed eviction (Redis / Garnet)](#distributed-eviction-redis--garnet)
   - [Clear cache on startup](#clear-cache-on-startup)
   - [Cache-hit response header](#cache-hit-response-header)
+  - [Conditional caching](#conditional-caching)
 - [Production checklist](#production-checklist)
 - [Caching requests](#caching-requests)
+- [When a response is cached](#when-a-response-is-cached)
 - [Invalidation](#invalidation)
 - [How it works](#how-it-works)
 - [Examples](#examples)
 - [Samples and benchmarks](#samples-and-benchmarks)
 - [Changelog](#changelog)
 - [Contributing](#contributing)
+- [Security](#security)
 - [License](#license)
 
 ---
@@ -73,6 +76,7 @@ Invalidation is **tag-based**: associate tags with cached requests, then evict b
 | **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
 | **Clear on startup** | Optional `ClearCacheOnStartup()` during DI configuration. |
 | **Cache-hit response header** | On an ASP.NET Core cache hit, sets `X-NexGen-Output-Cache: HIT` (on by default; call `EnableCacheHitResponseHeader(false)` to opt out). |
+| **Conditional caching** | Cache a response only when `CacheWhen` is true, or when FluentResults / an `IsSuccess` property reports success. Failed responses are skipped unless `CacheUnsuccessfulResponses(true)` is set. |
 | **FluentResults** | Cache get/set/evict APIs return `Result` / `Result<T>` for success and failure paths. |
 | **ASP.NET Core DI** | Integrates with `IServiceCollection` and standard Microsoft.Extensions.Caching abstractions. |
 | **Enterprise packaging** | Central Package Management, SourceLink, symbol packages (`.snupkg`), XML docs on public APIs. |
@@ -286,6 +290,22 @@ builder.Services.AddMediatROutputCache(opt =>
 });
 ```
 
+### Conditional caching
+
+By default, a cache miss stores the handler response only when it looks successful (see [When a response is cached](#when-a-response-is-cached)). Register a per-request predicate, or restore the previous “cache everything” behavior:
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache();
+
+    opt.CacheWhen<GetOrdersQuery, Result<List<OrderDto>>>(x => x.IsSuccess && x.Value.Count > 0);
+
+    // Restore 2.2.x behavior (cache FluentResults failures and IsSuccess = false as well)
+    // opt.CacheUnsuccessfulResponses(true);
+});
+```
+
 ---
 
 ## Production checklist
@@ -322,6 +342,28 @@ public sealed class WeatherForecastRequest : IRequest<IEnumerable<WeatherForecas
 |---------------------|----------|
 | `tags` | Labels for grouping and invalidation |
 | `expirationInSeconds` | Absolute lifetime in seconds. Default: **300**. Use **`0`** for no absolute expiration |
+
+---
+
+## When a response is cached
+
+On a cache miss the handler always runs. The response is stored only when a cache condition passes. Decision order:
+
+1. **`null` response** — never cached.
+2. **`CacheWhen<TRequest, TResponse>`** — if registered, that predicate decides. It receives the whole response (for FluentResults, the `Result` / `Result<T>` instance). Exceptions thrown by the predicate are not caught.
+3. Otherwise **FluentResults** `IResultBase.IsSuccess` when the response implements it.
+4. Otherwise a public instance `bool IsSuccess` property on the response type, when present.
+5. Otherwise the response is cached (same as 2.2.x for types without a success flag).
+
+`CacheUnsuccessfulResponses(true)` skips steps 3–4 so unsuccessful responses are cached again. An explicit `CacheWhen` predicate always takes priority over that flag.
+
+```csharp
+builder.Services.AddMediatROutputCache(opt =>
+{
+    opt.UseMemoryCache();
+    opt.CacheWhen<GetUsersQuery, GetUsersResponse>((req, res) => res.Items.Count > 0);
+});
+```
 
 ---
 
@@ -373,7 +415,7 @@ public sealed record CreateUserCommand(string Name) : IRequest<Result>;
 [RequestOutputCache]  →  RequestOutputCacheBehavior
                               │
                               ├─ hit  → set X-NexGen-Output-Cache: HIT (HTTP) → return cached TResponse
-                              └─ miss → handler → store → return TResponse
+                              └─ miss → handler → cache only if condition passes → return TResponse
 
 [RequestOutputCacheEvict] → handler succeeds → RequestOutputCacheEvictionDispatcher
                               ├─ local EvictByTagsAsync
@@ -480,7 +522,13 @@ Release notes are maintained in **[CHANGELOG.md](CHANGELOG.md)** (Keep a Changel
 
 Contributions are welcome through **GitHub Issues** and **Pull Requests**.
 
-Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR.
+Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR. By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+---
+
+## Security
+
+Please do not report security vulnerabilities as public issues. See **[SECURITY.md](SECURITY.md)** for supported versions and how to report privately.
 
 ---
 

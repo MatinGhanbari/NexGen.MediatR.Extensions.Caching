@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NexGen.MediatR.Extensions.Caching.Constants;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
@@ -85,6 +86,67 @@ public class RequestOutputCacheConfigurationOption
     public void EnableCacheHitResponseHeader(bool enabled)
     {
         RequestOutputCacheDefaultsRegistration.Apply(Services, defaultExpirationInSeconds: null, enableCacheHitResponseHeader: enabled);
+    }
+
+    /// <summary>
+    /// Caches unsuccessful handler responses (FluentResults failures and types whose
+    /// <c>IsSuccess</c> property is <see langword="false"/>), restoring pre-2.3 behavior.
+    /// Defaults to <see langword="false"/>. A predicate registered with
+    /// <see cref="CacheWhen{TRequest, TResponse}(Func{TResponse, bool})"/> always takes priority.
+    /// </summary>
+    /// <param name="enabled">
+    /// <see langword="true"/> to cache every non-null response when no custom predicate is registered.
+    /// </param>
+    public void CacheUnsuccessfulResponses(bool enabled)
+    {
+        RequestOutputCacheDefaultsRegistration.Apply(
+            Services,
+            defaultExpirationInSeconds: null,
+            enableCacheHitResponseHeader: null,
+            cacheUnsuccessfulResponses: enabled);
+    }
+
+    /// <summary>
+    /// Caches the handler response only when <paramref name="predicate"/> returns <see langword="true"/>.
+    /// The predicate receives the whole response (for FluentResults, that is the <c>Result</c> /
+    /// <c>Result&lt;T&gt;</c> instance). Exceptions thrown by the predicate are not caught.
+    /// </summary>
+    /// <typeparam name="TRequest">The MediatR request type.</typeparam>
+    /// <typeparam name="TResponse">The MediatR response type.</typeparam>
+    /// <param name="predicate">Returns <see langword="true"/> when the response should be cached.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="predicate"/> is <see langword="null"/>.</exception>
+    public void CacheWhen<TRequest, TResponse>(Func<TResponse, bool> predicate)
+        where TRequest : IRequest<TResponse>
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        CacheWhen<TRequest, TResponse>((_, response) => predicate(response));
+    }
+
+    /// <summary>
+    /// Caches the handler response only when <paramref name="predicate"/> returns <see langword="true"/>.
+    /// The predicate receives both the request and the whole response. Exceptions thrown by the
+    /// predicate are not caught.
+    /// </summary>
+    /// <typeparam name="TRequest">The MediatR request type.</typeparam>
+    /// <typeparam name="TResponse">The MediatR response type.</typeparam>
+    /// <param name="predicate">Returns <see langword="true"/> when the response should be cached.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="predicate"/> is <see langword="null"/>.</exception>
+    public void CacheWhen<TRequest, TResponse>(Func<TRequest, TResponse, bool> predicate)
+        where TRequest : IRequest<TResponse>
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        GetOrAddConditions().Register(predicate);
+    }
+
+    private RequestOutputCacheConditions GetOrAddConditions()
+    {
+        var existing = Services.FirstOrDefault(d => d.ServiceType == typeof(RequestOutputCacheConditions));
+        if (existing?.ImplementationInstance is RequestOutputCacheConditions instance)
+            return instance;
+
+        var conditions = new RequestOutputCacheConditions();
+        Services.TryAddSingleton(conditions);
+        return conditions;
     }
 
     /// <summary>
