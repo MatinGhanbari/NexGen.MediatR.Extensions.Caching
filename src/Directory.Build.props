@@ -7,12 +7,12 @@
     <IsPackable>true</IsPackable>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Authors>MatinGhanbari</Authors>
-    <Copyright>© 2026 MatinGhanbari</Copyright>
-    <Version>2.3.0</Version>
-    <PackageReleaseNotes>Release v2.3.0 — feat: Add conditional caching logic</PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Matin Ghanbari</Authors>
+    <Copyright>Copyright (c) Matin Ghanbari 2026</Copyright>
+    <Version>2.3.1</Version>
+    <PackageReleaseNotes>Release v2.3.1 — packaging/docs: NuGet metadata and README aligned with package authoring guidance. See https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>logo-min.png</PackageIcon>
     <RepositoryType>git</RepositoryType>
@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\assets\images\logo-min.png" Pack="true" PackagePath="\" />
-    <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 

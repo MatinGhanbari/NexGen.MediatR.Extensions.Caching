@@ -1,20 +1,14 @@
 # NexGen.MediatR.Extensions.Caching
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png" alt="NexGen.MediatR.Extensions.Caching" width="280" />
-</p>
+![NexGen.MediatR.Extensions.Caching](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png)
 
-<p align="center">
-  <strong>MediatR output caching</strong> with pipeline behaviors, tag-based invalidation, and optional Entity Framework auto-eviction.
-</p>
+**MediatR output caching** with pipeline behaviors, tag-based invalidation, and optional Entity Framework auto-eviction.
 
-<p align="center">
-  <a href="https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/MatinGhanbari/NexGen.MediatR.Extensions.Caching/.github%2Fworkflows%2Fci.yml?style=flat-square&label=CI" alt="CI" /></a>
-  <a href="https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching"><img src="https://img.shields.io/nuget/v/NexGen.MediatR.Extensions.Caching.svg?style=flat-square" alt="NuGet" /></a>
-  <a href="https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching"><img src="https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching?style=flat-square" alt="Downloads" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License" /></a>
-  <img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=flat-square" alt=".NET 8 | 9 | 10" />
-</p>
+[![CI](https://img.shields.io/github/actions/workflow/status/MatinGhanbari/NexGen.MediatR.Extensions.Caching/.github%2Fworkflows%2Fci.yml?style=flat-square&label=CI)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/NexGen.MediatR.Extensions.Caching.svg?style=flat-square)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
+[![Downloads](https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching?style=flat-square)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/LICENSE)
+![.NET 8 | 9 | 10](https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=flat-square)
 
 ---
 
@@ -486,9 +480,9 @@ public sealed class WeatherForecastUpdateRequestHandler(
 
 | Area | Location |
 |------|----------|
-| Integration / consumer sample | [`tests/NexGen.MediatR.Extensions.Caching.IntegrationTest`](tests/NexGen.MediatR.Extensions.Caching.IntegrationTest) (includes `docker-compose.yml` for Redis/SQL) |
-| Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
-| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) |
+| Integration / consumer sample | [`tests/NexGen.MediatR.Extensions.Caching.IntegrationTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.IntegrationTest) (includes `docker-compose.yml` for Redis/SQL) |
+| Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
+| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) |
 
 ![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
 
@@ -514,7 +508,7 @@ Version **2.0.0** removes the eviction-bus APIs. Use attributes plus one `AddMed
 
 ## Changelog
 
-Release notes are maintained in **[CHANGELOG.md](CHANGELOG.md)** (Keep a Changelog format). Check that file for what changed in each version.
+Release notes are maintained in **[CHANGELOG.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CHANGELOG.md)** (Keep a Changelog format). Check that file for what changed in each version.
 
 ---
 
@@ -522,16 +516,16 @@ Release notes are maintained in **[CHANGELOG.md](CHANGELOG.md)** (Keep a Changel
 
 Contributions are welcome through **GitHub Issues** and **Pull Requests**.
 
-Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR. By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Please read **[CONTRIBUTING.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR. By participating, you agree to follow the [Code of Conduct](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CODE_OF_CONDUCT.md).
 
 ---
 
 ## Security
 
-Please do not report security vulnerabilities as public issues. See **[SECURITY.md](SECURITY.md)** for supported versions and how to report privately.
+Please do not report security vulnerabilities as public issues. See **[SECURITY.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/SECURITY.md)** for supported versions and how to report privately.
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/LICENSE).
