@@ -10,6 +10,10 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+### Added
+
+- CI: publish lockstep NuGet packages to GitHub Packages in addition to nuget.org.
+
 ### Changed
 
 - Assets: reorganized under `assets/images/` (`logo/`, `banners/`, `benchmarks/`); README and NuGet package icon updated to match new branding.

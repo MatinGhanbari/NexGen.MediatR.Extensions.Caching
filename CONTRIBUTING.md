@@ -71,7 +71,7 @@ dotnet pack src/NexGen.MediatR.Extensions.Caching/NexGen.MediatR.Extensions.Cach
 
 ### Versioning
 
-Package versions are set once in `src/Directory.Build.props` and stay lockstep across all four packages. Maintainers bump the version for releases; contributors usually only add notes under `[Unreleased]` in the changelog unless asked otherwise.
+Package versions are set once in `src/Directory.Build.props` and stay lockstep across all four packages. Maintainers bump the version for releases; contributors usually only add notes under `[Unreleased]` in the changelog unless asked otherwise. Pushes to `main` with a new version publish all four packages to nuget.org and GitHub Packages, then create a GitHub Release.
 
 ## Reporting bugs
 

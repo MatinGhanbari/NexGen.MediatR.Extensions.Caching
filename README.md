@@ -120,6 +120,23 @@ Or via Package Manager Console:
 Install-Package NexGen.MediatR.Extensions.Caching
 ```
 
+### GitHub Packages (optional)
+
+The same lockstep packages are also published to [GitHub Packages](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/pkgs/nuget/NexGen.MediatR.Extensions.Caching). nuget.org remains the recommended source.
+
+```bash
+dotnet nuget add source \
+  --name github \
+  --username YOUR_GITHUB_USERNAME \
+  --password YOUR_GITHUB_PAT \
+  --store-password-in-clear-text \
+  https://nuget.pkg.github.com/MatinGhanbari/index.json
+
+dotnet add package NexGen.MediatR.Extensions.Caching
+```
+
+A GitHub personal access token with `read:packages` is required to restore from this feed, including for public packages.
+
 ---
 
 ## Quick start
