@@ -74,7 +74,7 @@ Invalidation is **tag-based**: associate tags with cached requests, then evict b
 | **Deterministic cache keys** | Key = `NexGen.MediatR.Extensions:{Namespace:segments}:{TypeName}:{SHA-256(JSON)}` — namespaced, Redis-tree friendly, collision-safe across namespaces. |
 | **Per-request expiration** | `expirationInSeconds` on the attribute (default **300**); `0` means no absolute expiration. Provider `DefaultExpirationInSeconds` can replace the library default when the attribute omits an explicit value. |
 | **Flush all** | `IRequestOutputCacheInvalidator.FlushAll` clears the entire cache store for the provider. |
-| **Clear on startup** | Optional `ClearCacheOnStartup()` during DI configuration. |
+| **Clear on startup** | Optional `ClearCacheOnStartup()` registers a hosted service that flushes the cache when the application host starts. |
 | **Cache-hit response header** | On an ASP.NET Core cache hit, sets `X-NexGen-Output-Cache: HIT` (on by default; call `EnableCacheHitResponseHeader(false)` to opt out). |
 | **Conditional caching** | Cache a response only when `CacheWhen` is true, or when FluentResults / an `IsSuccess` property reports success. Failed responses are skipped unless `CacheUnsuccessfulResponses(true)` is set. |
 | **FluentResults** | Cache get/set/evict APIs return `Result` / `Result<T>` for success and failure paths. |

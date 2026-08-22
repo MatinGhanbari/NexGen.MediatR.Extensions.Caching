@@ -10,6 +10,10 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+### Fixed
+
+- Core: `ClearCacheOnStartup()` registers a startup hosted service instead of calling `BuildServiceProvider()` during DI registration (#52).
+
 ### Added
 
 - Core: `CacheWhen<TRequest, TResponse>` registers a predicate that decides whether a handler response is stored after a cache miss. An overload receives both the request and the response (#78).
