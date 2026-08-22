@@ -1,0 +1,20 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: nexgen-benchmarks-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass P@ssword
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "P@ssword", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  garnet:
+    image: ghcr.io/microsoft/garnet
+    container_name: nexgen-benchmarks-garnet
+    ulimits:
+      memlock: -1
+    ports:
+      - "6380:6379"

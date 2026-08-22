@@ -13,10 +13,12 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 ### Added
 
 - CI: publish lockstep NuGet packages to GitHub Packages in addition to nuget.org.
+- Benchmarks: pipeline hit/miss/set, cache-key generation, in-memory container updates, tag-eviction scale, and Memory/Redis/Garnet Get/Set suites, with results in `docs/BENCHMARKS.md`.
 
 ### Changed
 
 - Assets: reorganized under `assets/images/` (`logo/`, `banners/`, `benchmarks/`); README and NuGet package icon updated to match new branding.
+- Benchmarks: replaced the delay-based cached-vs-uncached job with deterministic requests and a trivial handler so measurements reflect library overhead.
 
 ## [2.3.1] - 2026-08-18
 

@@ -499,11 +499,14 @@ public sealed class WeatherForecastUpdateRequestHandler(
 |------|----------|
 | Integration / consumer sample | [`tests/NexGen.MediatR.Extensions.Caching.IntegrationTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.IntegrationTest) (includes `docker-compose.yml` for Redis/SQL) |
 | Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
-| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) |
+| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) — run with [`benchmarks/run-benchmarks.ps1`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/run-benchmarks.ps1) |
+| Results | [`docs/BENCHMARKS.md`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/docs/BENCHMARKS.md) |
 
 ![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmarks/performance.png)
 
-> Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads.
+On a trivial handler (return a constant), an in-memory **cache hit is about 2.7× faster than a miss** (~4 µs vs ~11 µs) and about 5× an uncached `IMediator.Send` because of key generation and lookup. Redis/Garnet hits on localhost Docker were ~1.5–1.9 ms (network + JSON). Caching pays off when the handler does real work.
+
+> Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads. See [docs/BENCHMARKS.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/docs/BENCHMARKS.md) for full tables and how to re-run.
 
 ---
 
