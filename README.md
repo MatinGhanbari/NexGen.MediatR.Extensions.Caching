@@ -1,6 +1,6 @@
 # NexGen.MediatR.Extensions.Caching
 
-![NexGen.MediatR.Extensions.Caching](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png)
+![NexGen.MediatR.Extensions.Caching](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/banners/banner-white.png)
 
 **MediatR output caching** with pipeline behaviors, tag-based invalidation, and optional Entity Framework auto-eviction.
 
@@ -484,7 +484,7 @@ public sealed class WeatherForecastUpdateRequestHandler(
 | Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
 | Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) |
 
-![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
+![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmarks/performance.png)
 
 > Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads.
 
