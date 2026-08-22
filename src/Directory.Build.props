@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Matin Ghanbari</Authors>
     <Copyright>Copyright (c) Matin Ghanbari 2026</Copyright>
-    <Version>2.3.2</Version>
-    <PackageReleaseNotes>Release v2.3.2 — Update icons and readme.</PackageReleaseNotes>
+    <Version>2.3.3</Version>
+    <PackageReleaseNotes>Release v2.3.3 — Update Documentation.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
