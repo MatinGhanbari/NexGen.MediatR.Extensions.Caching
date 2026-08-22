@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using NexGen.MediatR.Extensions.Caching.Constants;
+using NexGen.MediatR.Extensions.Caching.Hosting;
 using NexGen.MediatR.Extensions.Caching.Containers;
 using NexGen.MediatR.Extensions.Caching.Contracts;
 using NexGen.MediatR.Extensions.Caching.Enums;
@@ -150,15 +152,18 @@ public class RequestOutputCacheConfigurationOption
     }
 
     /// <summary>
-    /// Clears all cached entries during application startup.
+    /// Clears all cached entries when the application host starts.
+    /// Registers an <see cref="IHostedService"/>; does not build a service provider during DI registration.
     /// </summary>
     public void ClearCacheOnStartup()
     {
         if (RequestOutputCacheType == default)
             throw new InvalidOperationException(ErrorMessages.CacheProviderNotConfigured);
 
-        using var scope = Services.BuildServiceProvider().CreateScope();
-        var cacheInvalidator = scope.ServiceProvider.GetRequiredService<IRequestOutputCacheInvalidator>();
-        cacheInvalidator.FlushAll(CancellationToken.None).GetAwaiter().GetResult();
+        if (Services.Any(d => d.ImplementationType == typeof(RequestOutputCacheClearOnStartupHostedService)))
+            return;
+
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, RequestOutputCacheClearOnStartupHostedService>());
     }
 }
