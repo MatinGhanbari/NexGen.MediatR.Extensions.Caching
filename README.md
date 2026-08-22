@@ -154,7 +154,7 @@ Send the request through MediatR as usual; the first call executes the handler a
 
 ## Configuration
 
-Register **one** cache provider via `AddMediatROutputCache`. Configuring more than one throws.
+Register **one** cache provider via `AddMediatROutputCache`. Configuring more than one throws. Invalid provider options (missing provider, non-positive default expiration, invalid Redis/Garnet database index) fail at **host startup** with a clear `OptionsValidationException`.
 
 ### In-memory cache
 

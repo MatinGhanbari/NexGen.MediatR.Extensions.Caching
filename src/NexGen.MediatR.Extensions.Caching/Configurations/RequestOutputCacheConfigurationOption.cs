@@ -68,6 +68,9 @@ public class RequestOutputCacheConfigurationOption
 
         RequestOutputCacheType = RequestOutputCacheType.MemoryCache;
 
+        RequestOutputCacheOptionsValidationRegistration.SetCacheProvider(Services, RequestOutputCacheType);
+        RequestOutputCacheOptionsValidationRegistration.RegisterMemoryProviderOptions(Services, memoryOptions);
+
         RequestOutputCacheDefaultsRegistration.Apply(Services, memoryOptions.DefaultExpirationInSeconds);
 
         Services.AddMemoryCache();

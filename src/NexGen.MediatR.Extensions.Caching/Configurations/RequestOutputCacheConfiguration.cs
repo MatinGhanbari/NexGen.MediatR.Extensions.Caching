@@ -35,6 +35,7 @@ public static class RequestOutputCacheConfiguration
     /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
     private static IServiceCollection AddMediatROutputCache(this IServiceCollection services)
     {
+        RequestOutputCacheOptionsValidationRegistration.Register(services);
         RequestOutputCacheDefaultsRegistration.Apply(services, defaultExpirationInSeconds: null);
         services.TryAddSingleton<RequestOutputCacheConditions>();
         services.AddHttpContextAccessor();

@@ -12,6 +12,10 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ### Added
 
+- Core / Redis / Garnet: validate MediatR output cache DI options at host startup via `IValidateOptions<T>` and `ValidateOnStart()` (#46).
+
+### Added
+
 - Core: `CacheWhen<TRequest, TResponse>` registers a predicate that decides whether a handler response is stored after a cache miss. An overload receives both the request and the response (#78).
 - Core: when no predicate is registered, unsuccessful FluentResults (`IResultBase`) responses and types with a public `bool IsSuccess` property of `false` are not cached. Types without a success flag still cache every non-null response. Opt out with `CacheUnsuccessfulResponses(true)` (#78).
 
