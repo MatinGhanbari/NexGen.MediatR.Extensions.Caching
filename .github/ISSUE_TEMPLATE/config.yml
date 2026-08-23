@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: NuGet packages
+    url: https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching
+    about: Package versions, downloads, and release notes on nuget.org
+  - name: GitHub Packages
+    url: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/pkgs/nuget/NexGen.MediatR.Extensions.Caching
+    about: Same lockstep packages on the GitHub NuGet registry
+  - name: Changelog
+    url: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CHANGELOG.md
+    about: What changed in each library version
+  - name: Contributing guide
+    url: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CONTRIBUTING.md
+    about: How to report issues and submit pull requests

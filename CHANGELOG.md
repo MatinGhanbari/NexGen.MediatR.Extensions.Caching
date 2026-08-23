@@ -12,6 +12,32 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ### Added
 
+- CI: publish lockstep NuGet packages to GitHub Packages in addition to nuget.org.
+- Benchmarks: pipeline hit/miss/set, cache-key generation, in-memory container updates, tag-eviction scale, and Memory/Redis/Garnet Get/Set suites, with results in `docs/BENCHMARKS.md`.
+
+### Changed
+
+- Assets: reorganized under `assets/images/` (`logo/`, `banners/`, `benchmarks/`); README and NuGet package icon updated to match new branding.
+- Benchmarks: replaced the delay-based cached-vs-uncached job with deterministic requests and a trivial handler so measurements reflect library overhead.
+
+## [2.4.0] - 2026-08-23
+
+### Added
+
+- Core / Redis / Garnet: validate MediatR output cache DI options at host startup via `IValidateOptions<T>` and `ValidateOnStart()` (#46).
+
+## [2.3.1] - 2026-08-18
+
+### Changed
+
+- Packaging: SPDX `MIT` license expression, `Authors` / `Copyright` pretty-name format, and `PackageRequireLicenseAcceptance` set to `false`.
+- Packaging: packed README uses CommonMark (no HTML) and absolute GitHub links so nuget.org renders and navigates correctly.
+- Packaging: package icon is 128x128 PNG with a transparent background.
+
+## [2.3.0] - 2026-08-18
+
+### Added
+
 - Core: `CacheWhen<TRequest, TResponse>` registers a predicate that decides whether a handler response is stored after a cache miss. An overload receives both the request and the response (#78).
 - Core: when no predicate is registered, unsuccessful FluentResults (`IResultBase`) responses and types with a public `bool IsSuccess` property of `false` are not cached. Types without a success flag still cache every non-null response. Opt out with `CacheUnsuccessfulResponses(true)` (#78).
 
@@ -154,7 +180,9 @@ See the [Migrating from 1.x](README.md#migrating-from-1x) table in the README.
 - `ClearCacheOnStartup` configuration option.
 - Integration sample and BenchmarkDotNet project.
 
-[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.3.1
+[2.3.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.3.0
 [2.2.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.2.0
 [2.1.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.1.0
 [2.0.0]: https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/releases/tag/v2.0.0

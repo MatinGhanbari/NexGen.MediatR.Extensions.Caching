@@ -22,6 +22,7 @@ Please search existing issues and PRs before opening a new one to avoid duplicat
 - .NET SDK **10.x** (see [`global.json`](global.json); roll-forward is enabled)
 - Targeting packs / runtimes for **net8.0**, **net9.0**, and **net10.0** (CI installs all three)
 - Optional: Docker for the integration sample (Redis / SQL Server) — see `tests/NexGen.MediatR.Extensions.Caching.IntegrationTest/docker-compose.yml`
+- Optional: Docker for Redis / Garnet provider benchmarks — see `benchmarks/docker-compose.yml`
 
 ### Build and test
 
@@ -37,13 +38,28 @@ Pack libraries locally:
 dotnet pack src/NexGen.MediatR.Extensions.Caching/NexGen.MediatR.Extensions.Caching.csproj -c Release -o ./artifacts
 ```
 
+### Running benchmarks
+
+```powershell
+.\benchmarks\run-benchmarks.ps1                 # all suites (starts Redis + Garnet if needed)
+.\benchmarks\run-benchmarks.ps1 -Suite pipeline # memory pipeline only, no Docker
+```
+
+```bash
+./benchmarks/run-benchmarks.sh
+./benchmarks/run-benchmarks.sh pipeline
+```
+
+Suites: `all`, `pipeline`, `micro`, `eviction`, `provider`. Results are machine-specific; the checked-in summary lives in [docs/BENCHMARKS.md](docs/BENCHMARKS.md). Pass `-KeepContainers` (PowerShell) or `KEEP_CONTAINERS=1` (bash) to leave Redis/Garnet running.
+
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
 | `src/` | Packable libraries (core, Redis, Garnet, EntityFramework) |
 | `tests/` | Unit tests and ASP.NET integration sample |
-| `benchmarks/` | BenchmarkDotNet projects |
+| `benchmarks/` | BenchmarkDotNet projects and `docker-compose.yml` for Redis/Garnet |
+| `docs/BENCHMARKS.md` | Checked-in benchmark results and methodology |
 | `Directory.Packages.props` | Central NuGet dependency versions |
 | `src/Directory.Build.props` | Lockstep package `Version` and NuGet metadata |
 | `Directory.Build.targets` | TFM-aligned Microsoft / EF package versions |
@@ -71,7 +87,7 @@ dotnet pack src/NexGen.MediatR.Extensions.Caching/NexGen.MediatR.Extensions.Cach
 
 ### Versioning
 
-Package versions are set once in `src/Directory.Build.props` and stay lockstep across all four packages. Maintainers bump the version for releases; contributors usually only add notes under `[Unreleased]` in the changelog unless asked otherwise.
+Package versions are set once in `src/Directory.Build.props` and stay lockstep across all four packages. Maintainers bump the version for releases; contributors usually only add notes under `[Unreleased]` in the changelog unless asked otherwise. Pushes to `main` with a new version publish all four packages to nuget.org and GitHub Packages, then create a GitHub Release.
 
 ## Reporting bugs
 
@@ -89,7 +105,11 @@ Describe the use case, how it fits the current opt-in / tag-based model, and whe
 
 ## Code of conduct
 
-Be respectful and constructive in issues and reviews. Harassment or abusive behavior is not acceptable.
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
+
+## Security
+
+Do not open a public issue for vulnerabilities. Follow **[SECURITY.md](SECURITY.md)** and report privately via GitHub Security Advisories.
 
 ## License
 

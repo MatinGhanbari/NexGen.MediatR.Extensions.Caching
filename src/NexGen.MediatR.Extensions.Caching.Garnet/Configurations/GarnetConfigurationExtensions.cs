@@ -66,6 +66,9 @@ public static class GarnetConfigurationExtensions
 
         options.RequestOutputCacheType = RequestOutputCacheType.GarnetCache;
 
+        RequestOutputCacheOptionsValidationRegistration.SetCacheProvider(options.Services, RequestOutputCacheType.GarnetCache);
+        RegisterGarnetProviderOptions(options.Services, garnetOptions);
+
         RequestOutputCacheDefaultsRegistration.Apply(options.Services, garnetOptions.DefaultExpirationInSeconds);
 
         var multiplexer = new Lazy<IConnectionMultiplexer>(
@@ -151,5 +154,26 @@ public static class GarnetConfigurationExtensions
         }
 
         cacheOptions.Configuration = connectionString;
+    }
+
+    private static void RegisterGarnetProviderOptions(
+        IServiceCollection services,
+        GarnetRequestOutputCacheOptions garnetOptions)
+    {
+        services.AddOptions<GarnetRequestOutputCacheOptions>()
+            .Configure(options =>
+            {
+                options.ConnectionString = garnetOptions.ConnectionString;
+                options.InstanceName = garnetOptions.InstanceName;
+                options.Database = garnetOptions.Database;
+                options.DefaultExpirationInSeconds = garnetOptions.DefaultExpirationInSeconds;
+                options.ConfigurationOptions = garnetOptions.ConfigurationOptions;
+                options.EnableDistributedEviction = garnetOptions.EnableDistributedEviction;
+                options.EvictionChannel = garnetOptions.EvictionChannel;
+            })
+            .ValidateOnStart();
+
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IValidateOptions<GarnetRequestOutputCacheOptions>, GarnetRequestOutputCacheOptionsValidator>());
     }
 }

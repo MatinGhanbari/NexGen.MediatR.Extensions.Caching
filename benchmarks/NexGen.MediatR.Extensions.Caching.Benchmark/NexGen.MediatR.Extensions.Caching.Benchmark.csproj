@@ -6,14 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj" />
     <ProjectReference Include="..\..\src\NexGen.MediatR.Extensions.Caching\NexGen.MediatR.Extensions.Caching.csproj" />
+    <ProjectReference Include="..\..\src\NexGen.MediatR.Extensions.Caching.Redis\NexGen.MediatR.Extensions.Caching.Redis.csproj" />
+    <ProjectReference Include="..\..\src\NexGen.MediatR.Extensions.Caching.Garnet\NexGen.MediatR.Extensions.Caching.Garnet.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="MediatR.Contracts" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
 </Project>

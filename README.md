@@ -1,20 +1,14 @@
 # NexGen.MediatR.Extensions.Caching
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/logo.png" alt="NexGen.MediatR.Extensions.Caching" width="280" />
-</p>
+![NexGen.MediatR.Extensions.Caching](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/banners/banner-white.png)
 
-<p align="center">
-  <strong>MediatR output caching</strong> with pipeline behaviors, tag-based invalidation, and optional Entity Framework auto-eviction.
-</p>
+**MediatR output caching** with pipeline behaviors, tag-based invalidation, and optional Entity Framework auto-eviction.
 
-<p align="center">
-  <a href="https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/MatinGhanbari/NexGen.MediatR.Extensions.Caching/.github%2Fworkflows%2Fci.yml?style=flat-square&label=CI" alt="CI" /></a>
-  <a href="https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching"><img src="https://img.shields.io/nuget/v/NexGen.MediatR.Extensions.Caching.svg?style=flat-square" alt="NuGet" /></a>
-  <a href="https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching"><img src="https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching?style=flat-square" alt="Downloads" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License" /></a>
-  <img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=flat-square" alt=".NET 8 | 9 | 10" />
-</p>
+[![CI](https://img.shields.io/github/actions/workflow/status/MatinGhanbari/NexGen.MediatR.Extensions.Caching/.github%2Fworkflows%2Fci.yml?style=flat-square&label=CI)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/NexGen.MediatR.Extensions.Caching.svg?style=flat-square)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
+[![Downloads](https://img.shields.io/nuget/dt/NexGen.MediatR.Extensions.Caching?style=flat-square)](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/LICENSE)
+![.NET 8 | 9 | 10](https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=flat-square)
 
 ---
 
@@ -126,6 +120,23 @@ Or via Package Manager Console:
 Install-Package NexGen.MediatR.Extensions.Caching
 ```
 
+### GitHub Packages (optional)
+
+The same lockstep packages are also published to [GitHub Packages](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/pkgs/nuget/NexGen.MediatR.Extensions.Caching). nuget.org remains the recommended source.
+
+```bash
+dotnet nuget add source \
+  --name github \
+  --username YOUR_GITHUB_USERNAME \
+  --password YOUR_GITHUB_PAT \
+  --store-password-in-clear-text \
+  https://nuget.pkg.github.com/MatinGhanbari/index.json
+
+dotnet add package NexGen.MediatR.Extensions.Caching
+```
+
+A GitHub personal access token with `read:packages` is required to restore from this feed, including for public packages.
+
 ---
 
 ## Quick start
@@ -154,7 +165,7 @@ Send the request through MediatR as usual; the first call executes the handler a
 
 ## Configuration
 
-Register **one** cache provider via `AddMediatROutputCache`. Configuring more than one throws.
+Register **one** cache provider via `AddMediatROutputCache`. Configuring more than one throws. Invalid provider options (missing provider, non-positive default expiration, invalid Redis/Garnet database index) fail at **host startup** with a clear `OptionsValidationException`.
 
 ### In-memory cache
 
@@ -486,13 +497,16 @@ public sealed class WeatherForecastUpdateRequestHandler(
 
 | Area | Location |
 |------|----------|
-| Integration / consumer sample | [`tests/NexGen.MediatR.Extensions.Caching.IntegrationTest`](tests/NexGen.MediatR.Extensions.Caching.IntegrationTest) (includes `docker-compose.yml` for Redis/SQL) |
-| Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
-| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) |
+| Integration / consumer sample | [`tests/NexGen.MediatR.Extensions.Caching.IntegrationTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.IntegrationTest) (includes `docker-compose.yml` for Redis/SQL) |
+| Unit tests | [`tests/NexGen.MediatR.Extensions.Caching.UnitTest`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/tests/NexGen.MediatR.Extensions.Caching.UnitTest) |
+| Benchmarks | [`benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/NexGen.MediatR.Extensions.Caching.Benchmark) — run with [`benchmarks/run-benchmarks.ps1`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/benchmarks/run-benchmarks.ps1) |
+| Results | [`docs/BENCHMARKS.md`](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/docs/BENCHMARKS.md) |
 
-![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmark.png)
+![Benchmark](https://raw.githubusercontent.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/main/assets/images/benchmarks/performance.png)
 
-> Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads.
+On a trivial handler (return a constant), an in-memory **cache hit is about 2.7× faster than a miss** (~4 µs vs ~11 µs) and about 5× an uncached `IMediator.Send` because of key generation and lookup. Redis/Garnet hits on localhost Docker were ~1.5–1.9 ms (network + JSON). Caching pays off when the handler does real work.
+
+> Larger or more complex responses use more memory with the in-memory provider. Prefer Redis or Garnet for multi-instance and production workloads. See [docs/BENCHMARKS.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/docs/BENCHMARKS.md) for full tables and how to re-run.
 
 ---
 
@@ -514,7 +528,7 @@ Version **2.0.0** removes the eviction-bus APIs. Use attributes plus one `AddMed
 
 ## Changelog
 
-Release notes are maintained in **[CHANGELOG.md](CHANGELOG.md)** (Keep a Changelog format). Check that file for what changed in each version.
+Release notes are maintained in **[CHANGELOG.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CHANGELOG.md)** (Keep a Changelog format). Check that file for what changed in each version.
 
 ---
 
@@ -522,16 +536,16 @@ Release notes are maintained in **[CHANGELOG.md](CHANGELOG.md)** (Keep a Changel
 
 Contributions are welcome through **GitHub Issues** and **Pull Requests**.
 
-Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR. By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Please read **[CONTRIBUTING.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CONTRIBUTING.md)** for the full contribution guide (development setup, coding standards, tests, and PR expectations) before opening an issue or PR. By participating, you agree to follow the [Code of Conduct](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/CODE_OF_CONDUCT.md).
 
 ---
 
 ## Security
 
-Please do not report security vulnerabilities as public issues. See **[SECURITY.md](SECURITY.md)** for supported versions and how to report privately.
+Please do not report security vulnerabilities as public issues. See **[SECURITY.md](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/SECURITY.md)** for supported versions and how to report privately.
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](https://github.com/MatinGhanbari/NexGen.MediatR.Extensions.Caching/blob/main/LICENSE).

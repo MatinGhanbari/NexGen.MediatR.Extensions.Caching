@@ -52,12 +52,13 @@ jobs:
           retention-days: 14
 
   publish:
-    name: Publish to NuGet
+    name: Publish packages
     needs: build-and-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
 
     steps:
       - name: Checkout code
@@ -101,17 +102,19 @@ jobs:
 
           if [[ "$STATUS" == "200" ]]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Version $VERSION is already on NuGet — skipping publish."
+            echo "Version $VERSION is already on nuget.org — skipping nuget.org and GitHub Release."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Version $VERSION is not on NuGet — will publish."
+            echo "Version $VERSION is not on nuget.org — will publish nuget.org and create a GitHub Release."
           fi
 
       - name: Setup .NET
-        if: steps.check.outputs.exists != 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push packages to NuGet.org
         if: steps.check.outputs.exists != 'true'
@@ -145,6 +148,25 @@ jobs:
               --skip-duplicate
           fi
 
+      - name: Push packages to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          shopt -s nullglob
+          NUPKGS=(artifacts/*.nupkg)
+
+          if [[ ${#NUPKGS[@]} -eq 0 ]]; then
+            echo "::error::No .nupkg files found in artifacts/"
+            exit 1
+          fi
+
+          # GitHub Packages does not host symbol packages; push .nupkg only.
+          dotnet nuget push "${NUPKGS[@]}" \
+            --api-key "$GITHUB_TOKEN" \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --skip-duplicate
+
       - name: Create GitHub Release
         if: steps.check.outputs.exists != 'true'
         uses: softprops/action-gh-release@v2
@@ -154,11 +176,17 @@ jobs:
           body: |
             ${{ steps.meta.outputs.notes }}
 
-            ### Packages
+            ### nuget.org
             - [NexGen.MediatR.Extensions.Caching](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching/${{ steps.meta.outputs.version }})
             - [NexGen.MediatR.Extensions.Caching.Redis](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.Redis/${{ steps.meta.outputs.version }})
             - [NexGen.MediatR.Extensions.Caching.Garnet](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.Garnet/${{ steps.meta.outputs.version }})
             - [NexGen.MediatR.Extensions.Caching.EntityFramework](https://www.nuget.org/packages/NexGen.MediatR.Extensions.Caching.EntityFramework/${{ steps.meta.outputs.version }})
+
+            ### GitHub Packages
+            - [NexGen.MediatR.Extensions.Caching](https://github.com/${{ github.repository }}/pkgs/nuget/NexGen.MediatR.Extensions.Caching)
+            - [NexGen.MediatR.Extensions.Caching.Redis](https://github.com/${{ github.repository }}/pkgs/nuget/NexGen.MediatR.Extensions.Caching.Redis)
+            - [NexGen.MediatR.Extensions.Caching.Garnet](https://github.com/${{ github.repository }}/pkgs/nuget/NexGen.MediatR.Extensions.Caching.Garnet)
+            - [NexGen.MediatR.Extensions.Caching.EntityFramework](https://github.com/${{ github.repository }}/pkgs/nuget/NexGen.MediatR.Extensions.Caching.EntityFramework)
           files: |
             artifacts/*.nupkg
             artifacts/*.snupkg
