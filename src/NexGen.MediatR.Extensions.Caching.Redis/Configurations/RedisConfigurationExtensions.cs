@@ -66,6 +66,9 @@ public static class RedisConfigurationExtensions
 
         options.RequestOutputCacheType = RequestOutputCacheType.RedisCache;
 
+        RequestOutputCacheOptionsValidationRegistration.SetCacheProvider(options.Services, RequestOutputCacheType.RedisCache);
+        RegisterRedisProviderOptions(options.Services, redisOptions);
+
         RequestOutputCacheDefaultsRegistration.Apply(options.Services, redisOptions.DefaultExpirationInSeconds);
 
         var multiplexer = new Lazy<IConnectionMultiplexer>(
@@ -151,5 +154,26 @@ public static class RedisConfigurationExtensions
         }
 
         cacheOptions.Configuration = connectionString;
+    }
+
+    private static void RegisterRedisProviderOptions(
+        IServiceCollection services,
+        RedisRequestOutputCacheOptions redisOptions)
+    {
+        services.AddOptions<RedisRequestOutputCacheOptions>()
+            .Configure(options =>
+            {
+                options.ConnectionString = redisOptions.ConnectionString;
+                options.InstanceName = redisOptions.InstanceName;
+                options.Database = redisOptions.Database;
+                options.DefaultExpirationInSeconds = redisOptions.DefaultExpirationInSeconds;
+                options.ConfigurationOptions = redisOptions.ConfigurationOptions;
+                options.EnableDistributedEviction = redisOptions.EnableDistributedEviction;
+                options.EvictionChannel = redisOptions.EvictionChannel;
+            })
+            .ValidateOnStart();
+
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IValidateOptions<RedisRequestOutputCacheOptions>, RedisRequestOutputCacheOptionsValidator>());
     }
 }

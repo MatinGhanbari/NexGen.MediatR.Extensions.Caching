@@ -20,6 +20,12 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 - Assets: reorganized under `assets/images/` (`logo/`, `banners/`, `benchmarks/`); README and NuGet package icon updated to match new branding.
 - Benchmarks: replaced the delay-based cached-vs-uncached job with deterministic requests and a trivial handler so measurements reflect library overhead.
 
+## [2.4.0] - 2026-08-23
+
+### Added
+
+- Core / Redis / Garnet: validate MediatR output cache DI options at host startup via `IValidateOptions<T>` and `ValidateOnStart()` (#46).
+
 ## [2.3.1] - 2026-08-18
 
 ### Changed

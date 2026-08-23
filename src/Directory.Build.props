@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Matin Ghanbari</Authors>
     <Copyright>Copyright (c) Matin Ghanbari 2026</Copyright>
-    <Version>2.3.3</Version>
-    <PackageReleaseNotes>Release v2.3.3 — Update Documentation.</PackageReleaseNotes>
+    <Version>2.4.0</Version>
+    <PackageReleaseNotes>Release v2.4.0 — Validate MediatR output cache DI options at host startup.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
