@@ -10,6 +10,10 @@ Package versions for **core**, **Redis**, **Garnet**, and **EntityFramework** ar
 
 ## [Unreleased]
 
+### Fixed
+
+- Core: `ClearCacheOnStartup()` registers a startup hosted service instead of calling `BuildServiceProvider()` during DI registration (#52).
+
 ### Added
 
 - CI: publish lockstep NuGet packages to GitHub Packages in addition to nuget.org.
